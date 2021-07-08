@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Snippet - BBBootstrap</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/chat2.css">
+    <link rel="stylesheet" href="css/elements.css">
+
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript"
+            src="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript"></script>
+</head>
+<body oncontextmenu="return false" class="snippet-body" style="overflow: hidden;">
+
+
+<div class="page-content page-container" id="page-content">
+    <div id="v-app">
+
+        <div v-if="isMobile()" style="position: fixed; top: 15px; right: 15px; z-index: 9999;">
+            <a v-bind:href="from_url">
+                <img src="icons/close.svg" style="width: 20px; height: 20px;"/>
+            </a>
+        </div>
+
+        <div class="row container d-flex justify-content-center app-container"
+             style="margin-right: 0;margin-left: 0;padding-right: 0;padding-left: 0;">
+
+
+            <div class="col-md-6"
+                 style="margin-right: 0;margin-left: 0;padding-right: 0;padding-left: 0;">
+
+
+                <div class="card card-bordered" v-bind:style="styleObject" id="cb_el">
+
+
+                    <input v-if="userEmail !== ''" type="checkbox" id="hmt" v-model="burger_check" class="hidden-menu-ticker">
+
+
+                    <label class="btn-menu" for="hmt" @click="checkEmailSet">
+                        <img src="icons/Union.svg"/>
+
+
+                    </label >
+
+                    <ul class="hidden-menu hidden-menu-text">
+                        <h6 class="hidden-menu-header">Choose command</h6>
+
+                        <div @click="(e)=>{ sendCmd('/ZGC SHOP'); }"
+                             class="row btn btn-lg hidden-menu-btn drop-down-btn">
+
+                            <img class="centered-img" src="icons/shopping-cart%201.svg">
+                            <span class="pull-left menu-cmd">ZGC SHOP</span>
+
+                        </div>
+
+                        <div @click="(e)=>{ sendCmd('/For Turkmenistan'); }"
+                             class="row btn btn-lg hidden-menu-btn drop-down-btn">
+
+                            <img class="centered-img" src="icons/turkmenistan%201.svg">
+                            <span class="pull-left menu-cmd">For Turkmenistan</span>
+
+                        </div>
+
+
+                        <div @click="(e)=>{ sendCmd('/Trial period'); }"
+                             class="row btn btn-lg hidden-menu-btn drop-down-btn">
+
+                            <img class="centered-img" src="icons/key%201.svg">
+                            <span class="pull-left menu-cmd">Trial period</span>
+
+                        </div>
+
+                        <div @click="(e)=>{ sendCmd('/Contact support'); }"
+                             class="row btn btn-lg hidden-menu-btn drop-down-btn">
+
+                            <img class="centered-img" src="icons/customer-service%201.svg">
+                            <span class="pull-left menu-cmd">Contact support</span>
+
+                        </div>
+                        <div @click="(e)=>{ sendCmd('/Payment'); }"
+                             class="row btn btn-lg hidden-menu-btn drop-down-btn">
+
+                            <img class="centered-img" src="icons/Vector.svg">
+                            <span class="pull-left menu-cmd">Payment</span>
+
+                        </div>
+
+
+                        <div @click="(e)=>{ sendCmd('/Learn more'); }"
+                             class="row btn btn-lg hidden-menu-btn drop-down-btn">
+
+                            <img class="centered-img" src="icons/info-button%201.svg">
+                            <span class="pull-left menu-cmd">Learn more</span>
+
+                        </div>
+
+                        <div @click="(e)=>{ sendCmd('/Partnership'); }"
+                             class="row btn btn-lg hidden-menu-btn drop-down-btn">
+
+                            <img class="centered-img" src="icons/hand-shake%201.svg">
+                            <span class="pull-left menu-cmd">Partnership</span>
+
+                        </div>
+
+
+                        <div class="hidden-menu-bottom">
+                            <hr/>
+                            <div>
+                                Live chat support responds on weekdays from 17: 00 to 22: 00 in Beijing time
+                            </div>
+
+                        </div>
+
+                    </ul>
+
+
+                    <div class="card-header">
+
+                        <h4 class="card-title"><strong>Support</strong></h4>
+
+
+                    </div>
+
+
+                    <div class="ps-container ps-theme-default ps-active-y" id="chat-content"
+                         style="overflow-y: scroll !important; height:400px !important;">
+
+
+                        <div v-if="messages.length === 0" class="helper-msg">
+                            In left top corner and right bottom corner there are
+                            pop up menus with list of commands for bot
+                        </div>
+
+
+                        <div v-for="(message, index) in messages" :key="index">
+
+                            <div v-if="message.from==='user'" class="media media-chat media-chat-reverse">
+                                <div class="media-body">
+                                    <p>{{ message.message }}</p>
+                                </div>
+                            </div>
+
+                            <div v-if="message.from==='bot'" class="media media-chat">
+                                <div class="media-body chat-msg">
+                                    <p>
+                                        {{ message.message }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div v-if="message.from === 'bot_link'" class="incoming_msg">
+                                <div class="incoming_msg_img"></div>
+                                <div class="received_msg">
+                                    <p class="bot-link">
+                                        {{ message.message }}
+                                        <br/>
+                                        <a v-bind:href="message.cmd" target="_blank">{{ message.cmd }}</a>
+
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div v-if="message.from==='bot_cmd'" class="media media-chat media-chat-btn">
+                                <div class="media-body">
+                                    <button class="btn btn-primary bot-cmd"
+                                            @click="(e)=>{ sendCmd(message.cmd); }">{{ message.message }}</button>
+                                </div>
+                            </div>
+
+
+                            <div v-if="message.from==='user_img'" class="media media-chat media-chat-reverse">
+                                <div class="media-body">
+                                    <p>
+                                        <img v-bind:src="message.url" class="chat-img"/>
+                                    </p>
+                                </div>
+                            </div>
+
+
+                        </div>
+
+
+                        <div id="bottom_msg">.</div>
+
+
+                        <div class="ps-scrollbar-x-rail" style="left: 0px; bottom: 0px;">
+                            <div class="ps-scrollbar-x" tabindex="0" style="left: 0px; width: 0px;"></div>
+                        </div>
+                        <div class="ps-scrollbar-y-rail" style="top: 0px; height: 0px; right: 2px;">
+                            <div class="ps-scrollbar-y" tabindex="0" style="top: 0px; height: 2px;"></div>
+                        </div>
+                        <div v-if="userEmail === ''" class="start-block" id="start-block">
+                            <div style="/* margin-left: 10px; */position: relative;padding: 6px 8px;margin: 4px 0;background-color: #FF7C74;border-radius: 15px 15px 15px 15px;color: #2C2C2C;font-weight: 350;font-family: Roboto, sans-serif;margin-right: 15px;margin-left: 5px;">
+                                {{ startMessage }}
+                            </div>
+                            <div>
+                                <div class="email-input-group "
+                                     v-bind:style="{ backgroundColor: emailColor }">
+                                    <div class="input-group  send-email-input"
+                                         style="margin-left: 20px; margin-bottom: 1px;">
+                                        <input v-model="enteringEmail" type="text" class="email-input"
+                                               placeholder="email..."
+                                               onkeypress="return emailEnter(event);"
+                                               v-bind:style="{ backgroundColor: emailColor }"
+                                        />
+                                        <div @click="clearEmail" class="input-group-append"
+                                             style="cursor: pointer; border: none;">
+                                            <span class="input-group-text"
+                                                  v-bind:style="{ backgroundColor: emailColor }">x</span>
+                                        </div>
+                                    </div>
+
+                                    <button class="email-btn" @click="sendEmail"> send</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="msg-input-wrapper" id="input-area">
+
+                        <div v-if="userEmail !== ''" class="publisher bt-1 border-light">
+
+                            <input class="publisher-input" type="text"
+                                   placeholder="Enter message..."
+                                   onkeypress="return msgEnter(event);"
+                                   v-model="messageText"/>
+
+                            <div class="image-upload">
+                                <label for="file-input">
+                                    <img src="icons/clip.svg"/>
+                                </label>
+
+                                <input id="file-input" style="display: none;" type="file" @change="sendImg"/>
+                            </div>
+
+
+                            <button class="btn btn-secondary dropdown-toggle upper-cmds-btn" type="button"
+                                    id="dropdownMenuButton3"
+                                    data-toggle="dropdown" aria-haspopup="true"
+                                    aria-expanded="false">
+
+                            </button>
+                            <div class="dropdown-menu upper-drop-down"
+                                 aria-labelledby="dropdownMenuButton"
+                                 x-placement="bottom-start">
+
+
+                                <div @click="(e)=>{ sendCmd('/ZGC SHOP'); }"
+                                     class="row dropdown-item  btn btn-lg hidden-menu-btn drop-down-btn">
+
+                                    <img class="centered-img" src="icons/shopping-cart%201.svg">
+                                    <span class="pull-left menu-cmd">ZGC SHOP</span>
+
+                                </div>
+
+                                <div @click="(e)=>{ sendCmd('/For Turkmenistan'); }"
+                                     class="row dropdown-item btn btn-lg hidden-menu-btn drop-down-btn">
+
+                                    <img class="centered-img" src="icons/turkmenistan%201.svg">
+                                    <span class="pull-left menu-cmd">For Turkmenistan</span>
+
+                                </div>
+
+
+                                <div @click="(e)=>{ sendCmd('/Trial period'); }"
+                                     class="row dropdown-item btn btn-lg hidden-menu-btn drop-down-btn">
+
+                                    <img class="centered-img" src="icons/key%201.svg">
+                                    <span class="pull-left menu-cmd">Trial period</span>
+
+                                </div>
+
+                                <div @click="(e)=>{ sendCmd('/Contact support'); }"
+                                     class="row dropdown-item btn btn-lg hidden-menu-btn drop-down-btn">
+
+                                    <img class="centered-img" src="icons/customer-service%201.svg">
+                                    <span class="pull-left menu-cmd">Contact support</span>
+
+                                </div>
+                                <div @click="(e)=>{ sendCmd('/Payment'); }"
+                                     class="row dropdown-item btn btn-lg hidden-menu-btn drop-down-btn">
+
+                                    <img class="centered-img" src="icons/Vector.svg">
+                                    <span class="pull-left menu-cmd">Payment</span>
+
+                                </div>
+
+
+                                <div @click="(e)=>{ sendCmd('/Learn more'); }"
+                                     class="row dropdown-item btn btn-lg hidden-menu-btn drop-down-btn">
+
+                                    <img class="centered-img" src="icons/info-button%201.svg">
+                                    <span class="pull-left menu-cmd">Learn more</span>
+
+                                </div>
+
+                                <div @click="(e)=>{ sendCmd('/Partnership'); }"
+                                     class="row dropdown-item btn btn-lg hidden-menu-btn drop-down-btn">
+
+                                    <img class="centered-img" src="icons/hand-shake%201.svg">
+                                    <span class="pull-left menu-cmd">Partnership</span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div @click="(e)=>{ sendMessage(); }" class="publisher-btn text-info" data-abc="true">
+                                <img src="icons/send%201.svg"/>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+    </div>
+</div>
+
+
+</body>
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+
+<script type="text/javascript">
+
+    let msg_container = null;
+
+
+    let bottom_msg;
+
+
+    function emailEnter(e){
+        if (e.which == 13 || e.keyCode == 13) {
+            //code to execute here
+            console.log('enter pressed');
+            app.sendEmail();
+            return false;
+        }
+    }
+
+    function msgEnter(e) {
+
+        if (e.which == 13 || e.keyCode == 13) {
+            //code to execute here
+            console.log('enter pressed');
+            app.sendMessage();
+            return false;
+        }
+    }
+
+
+    function goToBottom() {
+        let bottom_el = document.getElementById('bottom_msg');
+        bottom_el.scrollIntoView();
+    }
+
+
+    async function postData(url = '/chat', data = {}) {
+        // Default options are marked with *
+        url = url_prefix + url;
+        const response = await fetch(url, {
+            method: 'POST', // *GET, POST, PUT, DELETE, etc.
+            mode: 'cors', // no-cors, *cors, same-origin
+            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: 'same-origin', // include, *same-origin, omit
+            headers: {
+                'Content-Type': 'application/json'
+                // 'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            redirect: 'follow', // manual, *follow, error
+            referrerPolicy: 'no-referrer', // no-referrer, *client
+            body: JSON.stringify(data) // body data type must match "Content-Type" header
+        });
+        return await response.json(); // parses JSON response into native JavaScript objects
+    }
+
+    let ws_prefix = "botws/";
+    let url_prefix = "/botweb";
+
+
+
+    function isMobile() {
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|BB|PlayBook|IEMobile|Windows Phone|Kindle|Silk|Opera Mini/i.test(navigator.userAgent)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    window.onload = function () {
+        console.log("is mobile -" + isMobile());
+        console.log(window.innerHeight);
+
+        let msg_container = document.getElementById('chat-content');
+        let start_block = document.getElementById('start-block');
+
+        let new_msg_container_style = "height: " + (window.innerHeight - 120) + "px !important;";
+        let start_block_style = "margin-top: "+(window.innerHeight - 380) + "px !important;";
+
+        console.log(new_msg_container_style);
+
+        msg_container.style = new_msg_container_style;
+        start_block.style = start_block_style;
+
+
+    }
+
+
+    window.onresize = function () {
+        let msg_container = document.getElementById('chat-content');
+        let start_block = document.getElementById('start-block');
+
+        let new_msg_container_style = "height: " + (window.innerHeight - 120) + "px !important;";
+        let start_block_style = "margin-top: " + (window.innerHeight - 380) + "px !important;";
+
+        console.log(new_msg_container_style);
+
+        msg_container.style = new_msg_container_style;
+        start_block.style = start_block_style;
+    }
+
+    function initFromUrl() {
+        const urlSearchParams = new URLSearchParams(window.location.search);
+        const params = Object.fromEntries(urlSearchParams.entries());
+        app.from_url = params.from_url;
+    }
+
+    function initWS() {
+
+        let socket = new WebSocket("wss://zgc.su/botws");
+
+        socket.onopen = function (e) {
+            console.log("[open] Соединение установлено");
+            console.log("Отправляем данные на сервер+ email - " + this.userEmail);
+
+            let data = JSON.stringify({'email': app.userEmail, 'type': 'init'});
+
+            console.log(data + ' - init data');
+
+            socket.send(data);
+        };
+
+        socket.onmessage = function (event) {
+            console.log(`[message] Данные получены с сервера: ${event.data}`);
+
+            let data = JSON.parse(event.data);
+
+            if (data.type !== 'ping') {
+                app.messages.push(data);
+
+                console.log(data);
+                setTimeout(goToBottom, 200);
+                setTimeout(goToBottom, 500);
+                app.playRecieveAudio();
+            }
+
+        };
+
+        socket.onclose = function (event) {
+            if (event.wasClean) {
+                console.log(`[close] Соединение закрыто чисто, код=${event.code} причина=${event.reason}`);
+            } else {
+                // например, сервер убил процесс или сеть недоступна
+                // обычно в этом случае event.code 1006
+                console.log('[close] Соединение прервано');
+            }
+        };
+
+        socket.onerror = function (error) {
+            alert(`[error] ${error.message}`);
+        };
+
+        return socket;
+
+    }
+
+
+    let site_lang = "en";
+
+
+    var app = new Vue({
+        el: '#v-app',
+        data: {
+            messageText: '',
+            messages: [],
+
+
+            initialMessages: [
+                {from: 'bot_cmd', message: "Payment", cmd: "/Payment"},
+                {from: 'bot_cmd', message: "Trial period", cmd: "/Trial period"},
+                {from: 'bot_cmd', message: "Learn more", cmd: "/Learn more"},
+                {from: 'bot_cmd', message: "For Turkmenistan", cmd: "/For Turkmenistan"},
+                {from: 'bot_cmd', message: "Partnership", cmd: "/Partnership"},
+                {from: 'bot_cmd', message: "ZGC SHOP", cmd: "/ZGC SHOP"},
+                {from: 'bot_cmd', message: "Contact support", cmd: "/Contact support"},
+            ],
+
+
+            emailValid: true,
+
+            burger_check: false,
+
+            // card card-bordered styles - chat container
+            styleObject: {
+                overflow: 'hidden'
+            },
+
+
+            userEmail: '',
+
+            enteringEmail: '',
+
+            client_state: '',
+            pay_type: 'rub',
+
+            commands: [],
+            from_url: '',
+
+            first_msg_was: false,
+
+            conn_to_sup_cmds: ["/market", "/Payment", "/Связаться с поддержкой", "/Оплата", "/Contact support"],
+            through_msgs: ["/market"],
+
+            ws: null,
+
+            startMessage: 'Hello. To get started with the service, please specify your email address',
+
+            dialogOpenedMsg1: "Message sent to support! If you can't wait for a response, we will send you an E-mail or you can write to VK or telegram. We work from 17: 00-22: 00 on weekdays.",
+            dialogOpenedMsg2: 'To contact VK, send your email to Yandex. direct',
+            dialogOpenedMsg3: 'https://vk.com/ZhongGuoCu',
+            dialogOpenedMsg4: 'To communicate in Telegram, send your email and use the menu:',
+            dialogOpenedMsg5: 'https://t.me/ZGC_VPN_BOT',
+
+
+            first_ws_msg_was: false,
+
+        },
+
+        created: () => {
+            msg_container = document.querySelector('#chat-content');
+
+            bottom_msg = document.getElementById('bottom_msg');
+
+            console.log(msg_container);
+            console.log('created');
+
+            const getCmds = function () {
+                fetch('/commands')
+                    .then((response) => {
+                        return response.json();
+                    })
+                    .then((data) => {
+
+                        app.commands = data['data']
+                    });
+            }
+
+
+            setTimeout(initFromUrl, 2000);
+            setTimeout(initFromUrl, 6000);
+
+
+            let cached_email = localStorage.getItem("email");
+            if(cached_email !== null){
+                setTimeout(function (){ app.enteringEmail = cached_email; }, 400);
+                setTimeout(function (){ app.enteringEmail = cached_email; }, 600);
+            }
+        },
+
+        computed: {
+
+            emailColor() {
+                if (this.emailValid) {
+                    return '#d1d1d1';
+                } else {
+                    return '#FFBFBF';
+                }
+            }
+
+        },
+
+        methods: {
+
+            playSendAudio() {
+                let audio = new Audio('sounds/sound1.mp3');
+                audio.play();
+            },
+
+            playRecieveAudio() {
+                let audio = new Audio('sounds/sound2.mp3');
+                audio.play();
+            },
+
+
+            firstWsMsgAction(){
+                this.messages.push({from: 'bot', message: this.dialogOpenedMsg1});
+
+                this.messages.push({
+                                from: 'bot_link',
+                                message: this.dialogOpenedMsg2,
+                                cmd: this.dialogOpenedMsg3
+                            });
+
+                this.messages.push({
+                                from: 'bot_link',
+                                message: this.dialogOpenedMsg4,
+                                cmd: this.dialogOpenedMsg5
+                            });
+
+                this.first_ws_msg_was = true;
+            },
+
+
+            checkEmailSet() {
+                if (this.userEmail === '') {
+                    alert(this.startMessage);
+                }
+            },
+
+
+            sendImg() {
+
+
+                let input = document.querySelector('#file-input');
+
+                console.log(input.files[0]);
+
+                let data = new FormData();
+                data.append('file', input.files[0]);
+                data.append('user', app.userEmail);
+                data.append('client_state', this.client_state);
+                data.append('pay_type', this.pay_type);
+
+                console.log(data);
+
+                fetch(url_prefix + '/photo', {
+                    method: 'POST',
+                    body: data
+                }).then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                        console.log('omnomnomnom');
+                        if (data.status === "ok") {
+
+                            console.log(data);
+                            app.messages.push({from: 'user_img', url: url_prefix + data.url});
+
+                            this.playSendAudio();
+                        }
+                    });
+
+                setTimeout(1000, goToBottom());
+                setTimeout(3000, goToBottom());
+            },
+
+            connectToSupport() {
+                this.ws = initWS();
+            },
+
+            sendMessage() {
+
+                if (this.messageText.trim() === '') {
+                    return;
+                }
+
+                if (this.ws !== null && !this.messageText.startsWith('/')) {
+                    this.sendWsMsg(this.messageText);
+                    this.messageText = '';
+
+                    if (this.conn_to_sup_cmds.includes(this.messageText)) {
+                        this.sendCmd(this.messageText);
+                    }
+                    return;
+                }
+
+                this.sendCmd(this.messageText);
+
+                setTimeout(400, goToBottom());
+                setTimeout(800, goToBottom());
+            },
+
+            sendEmail() {
+                let validation = this.validateEmail(this.enteringEmail);
+
+                if (validation === true) {
+                    this.userEmail = this.enteringEmail;
+                    this.styleObject = null;
+                    this.messages = this.initialMessages;
+
+                    postData("/email", {email: this.enteringEmail})
+                        .then((data) => {
+
+                        });
+
+                    localStorage.setItem("email", this.enteringEmail);
+
+                } else {
+                    this.emailValid = false;
+                }
+            },
+
+            validateEmail(mail) {
+                if (/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(mail)) {
+                    return (true)
+                }
+                return (false)
+            },
+
+            clearEmail() {
+                console.log('clear');
+                this.enteringEmail = '';
+            },
+
+
+            isMobile() {
+                if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|BB|PlayBook|IEMobile|Windows Phone|Kindle|Silk|Opera Mini/i.test(navigator.userAgent)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            },
+
+            sendCmd(msg) {
+
+                this.playSendAudio();
+
+                if (msg === '/Оплата') {
+                    this.client_state = 'pay';
+                } else if(msg === '/yuan'){
+                    this.client_state = 'pay';
+                    this.pay_type = 'yuan';
+                } else if(msg === '/rub'){
+                    this.client_state = 'pay';
+                    this.pay_type = 'rub';
+                } else {
+                    this.client_state = '';
+                }
+
+                if (msg.trim() === '') {
+                    console.log('error - command is empty')
+                    return;
+                }
+
+                let userMessage = {from: 'user', message: msg}
+
+                this.messages.push(userMessage);
+
+                const processMessage = (bot_message) => {
+                    let message = {from: 'bot', message: bot_message.answer};
+                    let cmd_messages = bot_message.commands;
+                    this.messages.push(message);
+                    let regex = new RegExp('^http.://.');
+
+                    for (let i = 0; i < cmd_messages.length; i++) {
+                        if (cmd_messages[i][1].match(regex) != null) {
+                            this.messages.push({
+                                from: 'bot_link',
+                                message: cmd_messages[i][0],
+                                cmd: cmd_messages[i][1]
+                            });
+                        }
+
+                        let hash = cmd_messages[i][1][0];
+                        console.log(hash);
+
+                        if (hash === '/') {
+                            this.messages.push({from: 'bot_cmd', message: cmd_messages[i][0], cmd: cmd_messages[i][1]});
+                        }
+                    }
+
+                    console.log(bottom_msg);
+
+                    goToBottom();
+                    setTimeout(goToBottom, 20);
+                    setTimeout(goToBottom, 200);
+                }
+
+                postData('/chat', {message: msg, language: site_lang})
+                    .then((data) => {
+                        processMessage(data);
+                        if (this.conn_to_sup_cmds.includes(msg)) {
+
+                            let now = new Date();
+                            let utc_timestamp = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
+                                now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
+
+                            console.log(now);
+                            console.log(now.getUTCHours());
+                            console.log('-----------');
+
+                            // 17 < time < 22
+                            // разница меж китаем и UTC - 8 часов
+                            if ((9 < now.getUTCHours()) && (now.getUTCHours() < 14)) {
+                                let non_working = 'Мы работаем по Пекину с 17:00 до 22:00 в рабочие дни и сейчас не можем ответить на ваши вопросы. Если у вас есть срочный вопрос - нажмите кнопку Срочная связь и мы постараемся ответить как можно быстрее';
+                                app.messages.push({from: 'bot', message: non_working});
+                            }
+
+
+                            this.connectToSupport();
+                        }
+
+                        goToBottom();
+                    });
+                this.messageText = '';
+                this.burger_check = false;
+
+            },
+
+            sendWsMsg(msg_text) {
+                let msg = {message: msg_text, email: this.userEmail};
+                postData('/support/message', msg)
+                    .then((data) => {
+
+                    });
+                this.messages.push({from: 'user', message: this.messageText});
+                setTimeout(goToBottom, 500);
+
+
+                if(!this.first_ws_msg_was){
+                    this.firstWsMsgAction();
+                }
+
+
+            }
+
+        }
+    })
+
+</script>
+
+</html>
