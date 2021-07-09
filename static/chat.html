@@ -701,10 +701,10 @@
                             console.log(data);
                             app.messages.push({from: 'user_img', url: url_prefix + data.url});
                         }
+                        setTimeout(goToBottom, 400);
                     });
 
-                setTimeout(1000, goToBottom());
-                setTimeout(3000, goToBottom());
+                setTimeout(goToBottom, 1000);
             }
             ,
 
