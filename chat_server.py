@@ -52,7 +52,7 @@ def commands_file():
 def send_img_to_tg(name, email):
     import telebot
     bot = telebot.TeleBot(config.tg_token)
-    message = client_info_msg("email", email) + "\nWeb_client"
+    message = "email: " + email + "\nWeb_client"
 
     with open("static/web_files/" + name, 'rb') as f:
         bot.send_photo(chat_id=config.group_id, photo=f, caption=message)

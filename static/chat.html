@@ -138,7 +138,10 @@
                             <div v-if="message.from==='user_img'" class="media media-chat media-chat-reverse">
                                 <div class="media-body">
                                     <p>
-                                        <img v-bind:src="message.url" class="chat-img"/>
+                                        <a :href="message.url" target="_blank">
+                                            <img v-bind:src="message.url" class="chat-img"/>
+
+                                        </a>
                                     </p>
                                 </div>
                             </div>
@@ -804,6 +807,7 @@
 
                 this.messageText = '';
                 this.burger_check = false;
+                setTimeout(goToBottom, 200);
             },
 
             sendWsMsg(msg_text) {

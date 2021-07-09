@@ -1208,371 +1208,371 @@ def telegram():
 # ░╚████╔╝░██╔═██╗░██║░░██║██║╚████║░░░██║░░░██╔══██║██╔═██╗░░░░██║░░░██╔══╝░░
 # ░░╚██╔╝░░██║░╚██╗╚█████╔╝██║░╚███║░░░██║░░░██║░░██║██║░╚██╗░░░██║░░░███████╗
 # ░░░╚═╝░░░╚═╝░░╚═╝░╚════╝░╚═╝░░╚══╝░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚═╝░░░╚═╝░░░╚══════╝
-
-def vkontakte():
-    """ VK chat bot with reply and inline buttons. Identify user by ID, ask his email, transfer messages to support """
-
-    print("\nVkontakte running")
-
-    def reply_keyboard():
-        """ Return default reply keyboard """
-
-        keyboard = VkKeyboard()
-        keyboard.add_button("\U0001F4B4Оплата")
-        keyboard.add_button("\U0001F193Попробовать")
-        keyboard.add_line()
-        keyboard.add_button("\U0001F1F9\U0001F1F2Туркменистан")
-        keyboard.add_button("\U0001F4F0Узнать больше")
-        keyboard.add_line()
-        keyboard.add_button("\U0001F6D2ZGC SHOP")
-        keyboard.add_button("\U0001F91DСотрудничество")
-        keyboard.add_line()
-        keyboard.add_button("\U00002753Связаться с поддержкой")
-
-        return keyboard.get_keyboard()
-
-    def vk_support(user_id, urgent=False):
-        """ Handles every attempt to open support dialogue. Does not open if not urgent and not in working time """
-
-        keyboard = VkKeyboard(inline=True)
-
-        if not urgent:
-
-            # User trying to contact support in non working time
-            if not 17 <= datetime.datetime.today().hour < 22 or datetime.datetime.today().isoweekday() in [6, 7]:
-                keyboard.add_button("Срочная связь")
-
-                vk_send_message(user_id, messages.non_working, keyboard.get_keyboard())
-
-                return
-
-        open_dialogue("vk_id", user_id)
-
-        keyboard.add_button("Первичная настройка")
-        keyboard.add_line()
-        keyboard.add_button("Другое")
-        keyboard.add_line()
-        keyboard.add_button("ZGC SHOP")
-
-        # Ask user to choose problem type
-        msg = messages.type_support
-        sub = get_info("sub", "vk_id", user_id)
-        if sub != '-' and int(get_info("verified", "vk_id", user_id)):
-            msg += f"\U000026A1 Ваша подписка: {sub}"
-        vk_send_message(user_id, msg, keyboard.get_keyboard())
-
-    def buttons_handler(user_id, button_text):
-        """ Handles all available buttons """
-
-        if button_text == "\U0001F4B4Оплата":
-            open_dialogue("vk_id", user_id, state="PAY")
-
-            keyboard = VkKeyboard(inline=True)
-            keyboard.add_button("В рублях ₽ или в гривнах ₴")
-            keyboard.add_line()
-            keyboard.add_button("В юанях ¥")
-            keyboard.add_line()
-            keyboard.add_button("\U00002753Связаться с поддержкой")
-
-            vk_send_message(user_id, messages.pay_type, keyboard.get_keyboard())
-
-        elif button_text == "В рублях ₽ или в гривнах ₴":
-            vk_send_message(user_id, messages.rub_text_vk, reply_keyboard())
-
-        elif button_text == "В юанях ¥":
-            vk_send_message(user_id, messages.yuan_text_vk, reply_keyboard())
-
-        elif button_text == "\U0001F193Попробовать":
-            keyboard = VkKeyboard(inline=True)
-
-            keyboard.add_button("\U0001F4B4Оплата")
-            keyboard.add_line()
-            keyboard.add_button("\U00002753Связаться с поддержкой")
-
-            vk_send_message(user_id, messages.trial_text_vk, keyboard.get_keyboard())
-
-        elif button_text == "\U00002753Связаться с поддержкой":
-            vk_support(user_id)
-
-        elif button_text == "Срочная связь":
-            vk_support(user_id, urgent=True)
-
-        elif button_text == "Первичная настройка":
-            vk_send_message(user_id, messages.first_install, reply_keyboard())
-
-        elif button_text == "Другое":
-            vk_send_message(user_id, messages.support_vk, reply_keyboard())
-
-        elif button_text == "ZGC SHOP":
-            open_dialogue("vk_id", user_id)
-            vk_send_message(user_id, "Здравствуйте! Укажите, пожалуйста, продукт и вопросы по нему", reply_keyboard())
-
-        elif button_text == "\U0001F4F0Узнать больше":
-            keyboard = VkKeyboard(inline=True)
-
-            keyboard.add_openlink_button("Блог", "url")
-
-            vk_send_message(user_id, "Узнайте как заблокировать рекламу, какие появились сервера и многое другое",
-                            keyboard.get_keyboard())
-
-        elif button_text == "\U0001F1F9\U0001F1F2Туркменистан":
-            keyboard = VkKeyboard(inline=True)
-
-            keyboard.add_openlink_button("Сайт обслуживания", "url")
-            keyboard.add_line()
-            keyboard.add_openlink_button("Как подключить?", "url")
-
-            vk_send_message(user_id, messages.turk, keyboard.get_keyboard())
-
-        elif button_text == "\U0001F6D2ZGC SHOP":
-            keyboard = VkKeyboard(inline=True)
-
-            keyboard.add_openlink_button("\U0001F6D2 ZGC SHOP", "url")
-            keyboard.add_line()
-            keyboard.add_button("Связаться с поддержкой")
-
-            vk_send_message(user_id, messages.shop, keyboard.get_keyboard())
-
-        elif button_text == "Связаться с поддержкой":
-            open_dialogue("vk_id", user_id)
-            vk_send_message(user_id, "Здравствуйте! Укажите, пожалуйста, продукт и вопросы по нему", reply_keyboard())
-
-        elif button_text == "\U0001F91DСотрудничество":
-            keyboard = VkKeyboard(inline=True)
-
-            keyboard.add_openlink_button("Сделать предложение", "url")
-
-            vk_send_message(user_id, messages.coop, keyboard.get_keyboard())
-
-        # If user rated quality less than 5 and pushed feedback button, open dialogue for one message only
-        elif button_text == "\U0001F4A1 Оставить пожелание":
-            vk_send_message(user_id, messages.get_better)
-            update_clients(["vk_id", user_id], ["state", "ONE MESSAGE"], ["review_time", f"{int(time.time())}"])
-
-        # Buttons to rate the quality of support
-        elif button_text in ["\U0001F92C 1", "\U00002639 2", "\U0001F610 3", "\U0001F642 4", "\U0001F600 5"]:
-            keyboard = VkKeyboard(inline=True)
-
-            # User has already rated
-            if get_info("rate", "vk_id", user_id) != "0":
-                vk_send_message(user_id, "Вы уже поставили оценку, спасибо!")
-                return
-
-            rating = button_text[-1]
-
-            # Ask user to make review if he gave the highest rate
-            if rating == "5":
-                keyboard.add_openlink_button("\U0001F49B Оставить отзыв",
-                                             "url")
-
-                vk_send_message(user_id, "Если вам понравился наш сервис - оставьте отзыв, "
-                                         "и мы предоставим вам 10 дней бесплатного VPN!\n\n"
-                                         "Когда оставите отзыв свяжитесь с нами для получения бонуса",
-                                keyboard=keyboard.get_keyboard())
-
-            # Ask user to write feedback
-            else:
-                keyboard.add_button("\U0001F4A1 Оставить пожелание")
-                vk_send_message(user_id, "Мы можем что-то улучшить в обслуживании?", keyboard=keyboard.get_keyboard())
-
-            bot.send_message(config.group_id, f"Клиент `{user_id}` поставил вам {rating}", parse_mode='Markdown')
-            update_clients(["vk_id", user_id], ["rate", rating])
-
-    def vk_message_handler(event):
-        """ Check if user id in base or ask for email, transfer message to TG group if identified client """
-
-        user_id = event.user_id
-        text = event.message
-
-        # User ID not found in DB
-        if not db_find_value("vk_id", user_id):
-
-            # Check if message text has '@' between some non-space symbols
-            if not text or not re.findall(r"\S+@\S+", text):
-                vk_send_message(user_id, messages.send_email, reply_keyboard())
-                return
-
-            # Suppose user entered email, look for it in database
-            email = re.findall(r"\S+@\S+", text)[0].lower()
-            email_info = db_find_value("email", email)
-
-            # Email not found, insert new row in DB with that email and user ID
-            if not email_info:
-                new_client(email, "vk_id", user_id)
-                vk_send_message(user_id, messages.buttons_menu, reply_keyboard())
-
-            # Email is already used by user with other ID, ask to immediately contact us
-            elif email_info[5] != "0":
-                new_client("-", "vk_id", user_id)
-                open_dialogue("vk_id", user_id)
-                vk_send_message(user_id, messages.email_already_used, reply_keyboard())
-
-            # Email found in DB and not used by other ID, update DB
-            else:
-                update_clients(["email", email], ["vk_id", user_id])
-                vk_send_message(user_id, messages.buttons_menu, reply_keyboard())
-
-            return
-
-        # User pushed button
-        if text in ["\U0001F4B4Оплата", "\U0001F193Попробовать", "\U0001F1F9\U0001F1F2Туркменистан",
-                    "\U0001F4F0Узнать больше", "\U0001F6D2ZGC SHOP", "\U0001F91DСотрудничество",
-                    "\U00002753Связаться с поддержкой", "Срочная связь", "В рублях ₽ или в гривнах ₴",
-                    "В юанях ¥", "Первичная настройка", "Другое", "\U0001F92C 1", "\U00002639 2",
-                    "\U0001F610 3", "\U0001F642 4", "\U0001F600 5", "\U0001F4A1 Оставить пожелание",
-                    "ZGC SHOP", "Связаться с поддержкой"]:
-
-            buttons_handler(user_id, text)
-
-            return
-
-        user_state = get_info("state", "vk_id", user_id)
-        # User identified, dialogue is open, transfer message to support
-        if user_state in ["OPEN", "REMINDED"]:
-            forward_vk_to_tg(event)
-
-            # Notify user that we received his message (once per dialogue)
-            if get_info("received", "vk_id", user_id) == "NO":
-                vk_send_message(user_id, "Ваше сообщение передано в поддержку. "
-                                         "Мы постараемся ответить как можно быстрее!", reply_keyboard())
-                update_clients(["vk_id", user_id], ["received", "YES"])
-
-            if user_state == "REMINDED":
-                open_dialogue("vk_id", user_id)
-
-            return
-
-        # User identified, dialogue is closed, ask him to use buttons
-        if user_state == "CLOSED":
-            vk_send_message(user_id, messages.push_buttons, reply_keyboard())
-
-            return
-
-        # User pushed the feedback button after previous support conversation was closed.
-        # Suppose user entering one-message review
-        if user_state == "ONE MESSAGE":
-            time_past = int(time.time()) - int(get_info("review_time", "vk_id", user_id))
-
-            # If user pushed the button more than a day ago, don't send his message to support
-            if time_past // 3600 >= 24:
-                vk_send_message(user_id, messages.buttons_menu)
-
-            # Send review to support
-            else:
-                forward_vk_to_tg(event, review=True)
-                vk_send_message(user_id, "Спасибо за отзыв!")
-
-            update_clients(["vk_id", user_id], ["state", "CLOSED"])
-
-
-    # --------------------------------------------------
-    def forward_vk_to_tg(event, review=False):
-        """ Send client message to support with attachments and client tariff info """
-
-        user = vk.users.get(user_id=event.user_id)
-
-        # Upper part of the message with emoji and name of the user
-        top = "\U0001F4E2 Отзыв\n" if review else f"\U0001F4AC {user[0]['first_name']} {user[0]['last_name']}\n"
-
-        # Bottom part of the message with id and social network name, so we can reply back
-        check = "\U00002705" if get_info("verified", "vk_id", event.user_id) else ''
-        bottom = f"{str(event.user_id)} Vkontakte{check}"
-        attachments = vk.messages.getById(message_ids=event.message_id)['items'][0]['attachments']
-
-        if attachments:
-
-            att_send = 0
-
-            # Check if already sent caption
-            caption_send = 0
-
-            for att in get_attachments(event.message_id):
-                if att.get('filter') == 'photo':
-
-                    # Send photo only with ID info caption, without message text
-                    if caption_send:
-                        message = top + "\n" + bottom
-                        bot.send_photo(config.group_id, att.get('url'), caption=message)
-                        att_send = 1
-                        return
-
-                    # Make sure we get string type anyway
-                    text = event.message or ""
-
-                    message = top + text + "\n\n"
-
-                    # Add client tariff info
-                    if not info_too_soon(event.user_id):
-                        message += client_info_msg("vk_id", event.user_id)
-
-                    message += bottom
-                    bot.send_photo(config.group_id, att.get('url'), caption=message)
-                    att_send = 1
-
-                    # Change this so we don't send the same caption with other photo
-                    caption_send = 1
-
-            if not att_send:
-                text = event.message or ""
-                message = top + text + "\n_ОТ БОТА: клиент приложил в сообщение вконтакте файл, " \
-                                       "который нельзя отправить в телеграм_\n\n"
-
-                if not info_too_soon(event.user_id):
-                    message += client_info_msg("vk_id", event.user_id)
-
-                message += bottom
-                bot.send_message(config.group_id, message, parse_mode='Markdown')
-
-        else:
-            message = top + event.message + "\n\n"
-
-            # Add client tariff info
-            if not info_too_soon(event.user_id):
-                message += "\n" + client_info_msg("vk_id", event.user_id)
-
-            message += bottom
-            bot.send_message(config.group_id, message)
-
-    # --------------------------------------------------
-    def get_attachments(msg):
-        """ Collect message media, return list with attachments  """
-
-        msg_attachments = vk.messages.getById(message_ids=msg)['items'][0]['attachments']
-        attach_list = []
-
-        for att in msg_attachments:
-
-            # Collect photos
-            if att.get('type') == 'photo':
-                max_resolution_img = sorted(att['photo']['sizes'], key=lambda img: img.get('height'))[-1]
-                max_resolution_img['filter'] = 'photo'
-                attach_list.append(max_resolution_img)
-
-            # collect voice messages
-            elif att.get('type') == 'audio_message':
-                att['filter'] = 'audio'
-                attach_list.append(att)
-
-        return attach_list
-
-    # --------------------------------------------------
-    while True:
-        global vk_session
-        global vk
-
-        try:
-            longpoll = VkLongPoll(vk_session)
-            vk_session = vk_api.VkApi(token=config.token_vk)
-            vk = vk_session.get_api()
-
-            for event in longpoll.listen():
-                if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-                    vk_message_handler(event)
-
-        except Exception as e:
-            print("VK error")
-            log_report("vk", e)
-            time.sleep(3)
+#
+# def vkontakte():
+#     """ VK chat bot with reply and inline buttons. Identify user by ID, ask his email, transfer messages to support """
+#
+#     print("\nVkontakte running")
+#
+#     def reply_keyboard():
+#         """ Return default reply keyboard """
+#
+#         keyboard = VkKeyboard()
+#         keyboard.add_button("\U0001F4B4Оплата")
+#         keyboard.add_button("\U0001F193Попробовать")
+#         keyboard.add_line()
+#         keyboard.add_button("\U0001F1F9\U0001F1F2Туркменистан")
+#         keyboard.add_button("\U0001F4F0Узнать больше")
+#         keyboard.add_line()
+#         keyboard.add_button("\U0001F6D2ZGC SHOP")
+#         keyboard.add_button("\U0001F91DСотрудничество")
+#         keyboard.add_line()
+#         keyboard.add_button("\U00002753Связаться с поддержкой")
+#
+#         return keyboard.get_keyboard()
+#
+#     def vk_support(user_id, urgent=False):
+#         """ Handles every attempt to open support dialogue. Does not open if not urgent and not in working time """
+#
+#         keyboard = VkKeyboard(inline=True)
+#
+#         if not urgent:
+#
+#             # User trying to contact support in non working time
+#             if not 17 <= datetime.datetime.today().hour < 22 or datetime.datetime.today().isoweekday() in [6, 7]:
+#                 keyboard.add_button("Срочная связь")
+#
+#                 vk_send_message(user_id, messages.non_working, keyboard.get_keyboard())
+#
+#                 return
+#
+#         open_dialogue("vk_id", user_id)
+#
+#         keyboard.add_button("Первичная настройка")
+#         keyboard.add_line()
+#         keyboard.add_button("Другое")
+#         keyboard.add_line()
+#         keyboard.add_button("ZGC SHOP")
+#
+#         # Ask user to choose problem type
+#         msg = messages.type_support
+#         sub = get_info("sub", "vk_id", user_id)
+#         if sub != '-' and int(get_info("verified", "vk_id", user_id)):
+#             msg += f"\U000026A1 Ваша подписка: {sub}"
+#         vk_send_message(user_id, msg, keyboard.get_keyboard())
+#
+#     def buttons_handler(user_id, button_text):
+#         """ Handles all available buttons """
+#
+#         if button_text == "\U0001F4B4Оплата":
+#             open_dialogue("vk_id", user_id, state="PAY")
+#
+#             keyboard = VkKeyboard(inline=True)
+#             keyboard.add_button("В рублях ₽ или в гривнах ₴")
+#             keyboard.add_line()
+#             keyboard.add_button("В юанях ¥")
+#             keyboard.add_line()
+#             keyboard.add_button("\U00002753Связаться с поддержкой")
+#
+#             vk_send_message(user_id, messages.pay_type, keyboard.get_keyboard())
+#
+#         elif button_text == "В рублях ₽ или в гривнах ₴":
+#             vk_send_message(user_id, messages.rub_text_vk, reply_keyboard())
+#
+#         elif button_text == "В юанях ¥":
+#             vk_send_message(user_id, messages.yuan_text_vk, reply_keyboard())
+#
+#         elif button_text == "\U0001F193Попробовать":
+#             keyboard = VkKeyboard(inline=True)
+#
+#             keyboard.add_button("\U0001F4B4Оплата")
+#             keyboard.add_line()
+#             keyboard.add_button("\U00002753Связаться с поддержкой")
+#
+#             vk_send_message(user_id, messages.trial_text_vk, keyboard.get_keyboard())
+#
+#         elif button_text == "\U00002753Связаться с поддержкой":
+#             vk_support(user_id)
+#
+#         elif button_text == "Срочная связь":
+#             vk_support(user_id, urgent=True)
+#
+#         elif button_text == "Первичная настройка":
+#             vk_send_message(user_id, messages.first_install, reply_keyboard())
+#
+#         elif button_text == "Другое":
+#             vk_send_message(user_id, messages.support_vk, reply_keyboard())
+#
+#         elif button_text == "ZGC SHOP":
+#             open_dialogue("vk_id", user_id)
+#             vk_send_message(user_id, "Здравствуйте! Укажите, пожалуйста, продукт и вопросы по нему", reply_keyboard())
+#
+#         elif button_text == "\U0001F4F0Узнать больше":
+#             keyboard = VkKeyboard(inline=True)
+#
+#             keyboard.add_openlink_button("Блог", "url")
+#
+#             vk_send_message(user_id, "Узнайте как заблокировать рекламу, какие появились сервера и многое другое",
+#                             keyboard.get_keyboard())
+#
+#         elif button_text == "\U0001F1F9\U0001F1F2Туркменистан":
+#             keyboard = VkKeyboard(inline=True)
+#
+#             keyboard.add_openlink_button("Сайт обслуживания", "url")
+#             keyboard.add_line()
+#             keyboard.add_openlink_button("Как подключить?", "url")
+#
+#             vk_send_message(user_id, messages.turk, keyboard.get_keyboard())
+#
+#         elif button_text == "\U0001F6D2ZGC SHOP":
+#             keyboard = VkKeyboard(inline=True)
+#
+#             keyboard.add_openlink_button("\U0001F6D2 ZGC SHOP", "url")
+#             keyboard.add_line()
+#             keyboard.add_button("Связаться с поддержкой")
+#
+#             vk_send_message(user_id, messages.shop, keyboard.get_keyboard())
+#
+#         elif button_text == "Связаться с поддержкой":
+#             open_dialogue("vk_id", user_id)
+#             vk_send_message(user_id, "Здравствуйте! Укажите, пожалуйста, продукт и вопросы по нему", reply_keyboard())
+#
+#         elif button_text == "\U0001F91DСотрудничество":
+#             keyboard = VkKeyboard(inline=True)
+#
+#             keyboard.add_openlink_button("Сделать предложение", "url")
+#
+#             vk_send_message(user_id, messages.coop, keyboard.get_keyboard())
+#
+#         # If user rated quality less than 5 and pushed feedback button, open dialogue for one message only
+#         elif button_text == "\U0001F4A1 Оставить пожелание":
+#             vk_send_message(user_id, messages.get_better)
+#             update_clients(["vk_id", user_id], ["state", "ONE MESSAGE"], ["review_time", f"{int(time.time())}"])
+#
+#         # Buttons to rate the quality of support
+#         elif button_text in ["\U0001F92C 1", "\U00002639 2", "\U0001F610 3", "\U0001F642 4", "\U0001F600 5"]:
+#             keyboard = VkKeyboard(inline=True)
+#
+#             # User has already rated
+#             if get_info("rate", "vk_id", user_id) != "0":
+#                 vk_send_message(user_id, "Вы уже поставили оценку, спасибо!")
+#                 return
+#
+#             rating = button_text[-1]
+#
+#             # Ask user to make review if he gave the highest rate
+#             if rating == "5":
+#                 keyboard.add_openlink_button("\U0001F49B Оставить отзыв",
+#                                              "url")
+#
+#                 vk_send_message(user_id, "Если вам понравился наш сервис - оставьте отзыв, "
+#                                          "и мы предоставим вам 10 дней бесплатного VPN!\n\n"
+#                                          "Когда оставите отзыв свяжитесь с нами для получения бонуса",
+#                                 keyboard=keyboard.get_keyboard())
+#
+#             # Ask user to write feedback
+#             else:
+#                 keyboard.add_button("\U0001F4A1 Оставить пожелание")
+#                 vk_send_message(user_id, "Мы можем что-то улучшить в обслуживании?", keyboard=keyboard.get_keyboard())
+#
+#             bot.send_message(config.group_id, f"Клиент `{user_id}` поставил вам {rating}", parse_mode='Markdown')
+#             update_clients(["vk_id", user_id], ["rate", rating])
+#
+#     def vk_message_handler(event):
+#         """ Check if user id in base or ask for email, transfer message to TG group if identified client """
+#
+#         user_id = event.user_id
+#         text = event.message
+#
+#         # User ID not found in DB
+#         if not db_find_value("vk_id", user_id):
+#
+#             # Check if message text has '@' between some non-space symbols
+#             if not text or not re.findall(r"\S+@\S+", text):
+#                 vk_send_message(user_id, messages.send_email, reply_keyboard())
+#                 return
+#
+#             # Suppose user entered email, look for it in database
+#             email = re.findall(r"\S+@\S+", text)[0].lower()
+#             email_info = db_find_value("email", email)
+#
+#             # Email not found, insert new row in DB with that email and user ID
+#             if not email_info:
+#                 new_client(email, "vk_id", user_id)
+#                 vk_send_message(user_id, messages.buttons_menu, reply_keyboard())
+#
+#             # Email is already used by user with other ID, ask to immediately contact us
+#             elif email_info[5] != "0":
+#                 new_client("-", "vk_id", user_id)
+#                 open_dialogue("vk_id", user_id)
+#                 vk_send_message(user_id, messages.email_already_used, reply_keyboard())
+#
+#             # Email found in DB and not used by other ID, update DB
+#             else:
+#                 update_clients(["email", email], ["vk_id", user_id])
+#                 vk_send_message(user_id, messages.buttons_menu, reply_keyboard())
+#
+#             return
+#
+#         # User pushed button
+#         if text in ["\U0001F4B4Оплата", "\U0001F193Попробовать", "\U0001F1F9\U0001F1F2Туркменистан",
+#                     "\U0001F4F0Узнать больше", "\U0001F6D2ZGC SHOP", "\U0001F91DСотрудничество",
+#                     "\U00002753Связаться с поддержкой", "Срочная связь", "В рублях ₽ или в гривнах ₴",
+#                     "В юанях ¥", "Первичная настройка", "Другое", "\U0001F92C 1", "\U00002639 2",
+#                     "\U0001F610 3", "\U0001F642 4", "\U0001F600 5", "\U0001F4A1 Оставить пожелание",
+#                     "ZGC SHOP", "Связаться с поддержкой"]:
+#
+#             buttons_handler(user_id, text)
+#
+#             return
+#
+#         user_state = get_info("state", "vk_id", user_id)
+#         # User identified, dialogue is open, transfer message to support
+#         if user_state in ["OPEN", "REMINDED"]:
+#             forward_vk_to_tg(event)
+#
+#             # Notify user that we received his message (once per dialogue)
+#             if get_info("received", "vk_id", user_id) == "NO":
+#                 vk_send_message(user_id, "Ваше сообщение передано в поддержку. "
+#                                          "Мы постараемся ответить как можно быстрее!", reply_keyboard())
+#                 update_clients(["vk_id", user_id], ["received", "YES"])
+#
+#             if user_state == "REMINDED":
+#                 open_dialogue("vk_id", user_id)
+#
+#             return
+#
+#         # User identified, dialogue is closed, ask him to use buttons
+#         if user_state == "CLOSED":
+#             vk_send_message(user_id, messages.push_buttons, reply_keyboard())
+#
+#             return
+#
+#         # User pushed the feedback button after previous support conversation was closed.
+#         # Suppose user entering one-message review
+#         if user_state == "ONE MESSAGE":
+#             time_past = int(time.time()) - int(get_info("review_time", "vk_id", user_id))
+#
+#             # If user pushed the button more than a day ago, don't send his message to support
+#             if time_past // 3600 >= 24:
+#                 vk_send_message(user_id, messages.buttons_menu)
+#
+#             # Send review to support
+#             else:
+#                 forward_vk_to_tg(event, review=True)
+#                 vk_send_message(user_id, "Спасибо за отзыв!")
+#
+#             update_clients(["vk_id", user_id], ["state", "CLOSED"])
+#
+#
+#     # --------------------------------------------------
+#     def forward_vk_to_tg(event, review=False):
+#         """ Send client message to support with attachments and client tariff info """
+#
+#         user = vk.users.get(user_id=event.user_id)
+#
+#         # Upper part of the message with emoji and name of the user
+#         top = "\U0001F4E2 Отзыв\n" if review else f"\U0001F4AC {user[0]['first_name']} {user[0]['last_name']}\n"
+#
+#         # Bottom part of the message with id and social network name, so we can reply back
+#         check = "\U00002705" if get_info("verified", "vk_id", event.user_id) else ''
+#         bottom = f"{str(event.user_id)} Vkontakte{check}"
+#         attachments = vk.messages.getById(message_ids=event.message_id)['items'][0]['attachments']
+#
+#         if attachments:
+#
+#             att_send = 0
+#
+#             # Check if already sent caption
+#             caption_send = 0
+#
+#             for att in get_attachments(event.message_id):
+#                 if att.get('filter') == 'photo':
+#
+#                     # Send photo only with ID info caption, without message text
+#                     if caption_send:
+#                         message = top + "\n" + bottom
+#                         bot.send_photo(config.group_id, att.get('url'), caption=message)
+#                         att_send = 1
+#                         return
+#
+#                     # Make sure we get string type anyway
+#                     text = event.message or ""
+#
+#                     message = top + text + "\n\n"
+#
+#                     # Add client tariff info
+#                     if not info_too_soon(event.user_id):
+#                         message += client_info_msg("vk_id", event.user_id)
+#
+#                     message += bottom
+#                     bot.send_photo(config.group_id, att.get('url'), caption=message)
+#                     att_send = 1
+#
+#                     # Change this so we don't send the same caption with other photo
+#                     caption_send = 1
+#
+#             if not att_send:
+#                 text = event.message or ""
+#                 message = top + text + "\n_ОТ БОТА: клиент приложил в сообщение вконтакте файл, " \
+#                                        "который нельзя отправить в телеграм_\n\n"
+#
+#                 if not info_too_soon(event.user_id):
+#                     message += client_info_msg("vk_id", event.user_id)
+#
+#                 message += bottom
+#                 bot.send_message(config.group_id, message, parse_mode='Markdown')
+#
+#         else:
+#             message = top + event.message + "\n\n"
+#
+#             # Add client tariff info
+#             if not info_too_soon(event.user_id):
+#                 message += "\n" + client_info_msg("vk_id", event.user_id)
+#
+#             message += bottom
+#             bot.send_message(config.group_id, message)
+#
+#     # --------------------------------------------------
+#     def get_attachments(msg):
+#         """ Collect message media, return list with attachments  """
+#
+#         msg_attachments = vk.messages.getById(message_ids=msg)['items'][0]['attachments']
+#         attach_list = []
+#
+#         for att in msg_attachments:
+#
+#             # Collect photos
+#             if att.get('type') == 'photo':
+#                 max_resolution_img = sorted(att['photo']['sizes'], key=lambda img: img.get('height'))[-1]
+#                 max_resolution_img['filter'] = 'photo'
+#                 attach_list.append(max_resolution_img)
+#
+#             # collect voice messages
+#             elif att.get('type') == 'audio_message':
+#                 att['filter'] = 'audio'
+#                 attach_list.append(att)
+#
+#         return attach_list
+#
+#     # --------------------------------------------------
+#     while True:
+#         global vk_session
+#         global vk
+#
+#         try:
+#             longpoll = VkLongPoll(vk_session)
+#             vk_session = vk_api.VkApi(token=config.token_vk)
+#             vk = vk_session.get_api()
+#
+#             for event in longpoll.listen():
+#                 if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+#                     vk_message_handler(event)
+#
+#         except Exception as e:
+#             print("VK error")
+#             log_report("vk", e)
+#             time.sleep(3)
 
 
 # ███████╗░█████╗░░█████╗░███████╗██████╗░░█████╗░░█████╗░██╗░░██╗
@@ -1581,306 +1581,306 @@ def vkontakte():
 # ██╔══╝░░██╔══██║██║░░██╗██╔══╝░░██╔══██╗██║░░██║██║░░██║██╔═██╗░
 # ██║░░░░░██║░░██║╚█████╔╝███████╗██████╦╝╚█████╔╝╚█████╔╝██║░╚██╗
 # ╚═╝░░░░░╚═╝░░╚═╝░╚════╝░╚══════╝╚═════╝░░╚════╝░░╚════╝░╚═╝░░╚═╝
-
-def facebook():
-    """" FB chat bot with reply and inline buttons. Identify user by ID, ask his email, transfer messages to support """
-
-    print("\nFacebook running")
-
-    app = Flask(__name__)
-
-    @app.route('/', methods=['GET', 'POST'])
-    def receive_message():
-
-        # Facebook verification
-        if request.method == 'GET':
-            token_sent = request.args['hub.verify_token']
-            return verify_fb_token(token_sent)
-
-        else:
-            output = request.get_json()
-
-            for event in output['entry']:
-                messaging = event['messaging']
-
-                for message in messaging:
-                    message_handler(message)
-
-            return "Message Processed"
-
-    # --------------------------------------------------
-    def message_handler(message):
-        """ Check if user ID in base or ask for email, transfer message to TG group if identified client """
-
-        user_id = message['sender']['id']
-
-        # Do not react on our own messages
-        if user_id == config.fb_group_id:
-            return
-
-        text = message['message'].get('text') if message.get('message') else ""
-        payload = message['postback'].get('payload') if message.get('postback') else None
-
-        # User ID not found in DB
-        if not db_find_value("fb_id", user_id):
-
-            # Check if message text has '@' between some non-space symbols
-            if not text or not re.findall(r"\S+@\S+", text):
-                fb_bot.send_text_message(user_id, messages.send_email)
-                return
-
-            # Suppose user entered email, look for it in database
-            email = re.findall(r"\S+@\S+", text)[0].lower()
-            email_info = db_find_value("email", email)
-
-            # Email not found, insert new row in DB with that email and user ID
-            if not email_info:
-                new_client(email, "fb_id", user_id)
-                send_initial_buttons(user_id)
-
-            # Email is already used by user with other ID, ask to immediately contact us
-            elif email_info[6] != "0":
-                new_client("-", "fb_id", user_id)
-                open_dialogue("fb_id", user_id)
-                fb_bot.send_text_message(user_id, messages.email_already_used)
-
-            # Email found in DB and not used by other ID, update DB
-            else:
-                update_clients(["email", email], ["fb_id", user_id])
-                send_initial_buttons(user_id)
-
-            return
-
-        # User pushed buttons
-        if payload in ["pay", "trial", "sup", "turk", "urgent", "other", "rub", "yuan", "install", "sup_other",
-                       "wish", "2", "4", "5"]:
-            buttons_handler(user_id, payload)
-
-            return
-
-        user_state = get_info("state", "fb_id", user_id)
-        # User identified, dialogue is open, transfer message to support
-        if user_state in ["OPEN", "REMINDED", "PAY"]:
-            forward_fb_to_tg(message)
-
-            # Notify user that we received his message (once per dialogue)
-            if get_info("received", "fb_id", user_id) == "NO":
-                fb_bot.send_text_message(user_id, "Ваше сообщение передано в поддержку. "
-                                                  "Мы постараемся ответить как можно быстрее!")
-                update_clients(["fb_id", user_id], ["received", "YES"])
-
-            if user_state == "REMINDED":
-                open_dialogue("fb_id", user_id)
-
-            return
-
-        # User identified, dialogue is closed, ask him to use buttons
-        if user_state == "CLOSED":
-            send_initial_buttons(user_id, reply=True)
-            return
-
-        # User pushed the feedback button after previous support conversation was closed.
-        # Suppose user entering one-message review
-        if user_state == "ONE MESSAGE":
-            time_past = int(time.time()) - int(get_info("review_time", "fb_id", user_id))
-
-            if time_past // 3600 >= 24:
-                fb_bot.send_text_message(user_id, messages.buttons_menu)
-
-            else:
-                forward_fb_to_tg(message, review=True)
-                fb_bot.send_text_message(user_id, "Спасибо за отзыв!")
-
-            update_clients(["fb_id", user_id], ["state", "CLOSED"])
-
-    # --------------------------------------------------
-    def send_initial_buttons(id, reply=False):
-        """ Send message with starting buttons """
-
-        buttons = [Button(title='\U0001F4B4Оплата', type='postback', payload='pay'),
-                   Button(title='\U00002753Поддержка', type='postback', payload='sup'),
-                   Button(title='Другое', type='postback', payload='other')]
-
-        text = messages.push_buttons if reply else messages.buttons_menu
-        fb_bot.send_button_message(recipient_id=id, text=text, buttons=buttons)
-
-    # --------------------------------------------------
-    def support(user_id, urgent=False):
-        """ Handles every attempt to open support dialogue. Do not open if not urgent and not in working time """
-
-        if not urgent:
-
-            # User trying to contact support in non working time
-            if not 17 <= datetime.datetime.today().hour < 22 or datetime.datetime.today().isoweekday() in [6, 7]:
-                buttons = [Button(title='Срочно', type='postback', payload='urgent')]
-
-                fb_bot.send_button_message(user_id, messages.non_working, buttons)
-
-                return
-
-        open_dialogue("fb_id", user_id)
-
-        buttons = [Button(title='Настройка', type='postback', payload='install'),
-                   Button(title='Другое', type='postback', payload='sup_other')]
-
-        # Ask user to choose problem type
-        msg = messages.type_support
-        sub = get_info("sub", "fb_id", user_id)
-        if sub != '-' and int(get_info("verified", "fb_id", user_id)):
-            msg += f"\U000026A1 Ваша подписка: {sub}"
-        fb_bot.send_button_message(user_id, msg, buttons)
-
-    # --------------------------------------------------
-    def buttons_handler(user_id, payload):
-        """ Handles all available buttons """
-
-        if payload == "pay":
-            open_dialogue("fb_id", user_id, state="PAY")
-
-            buttons = [Button(title='Рубли ₽ / Гривны ₴', type='postback', payload='rub'),
-                       Button(title='Юани ¥', type='postback', payload='yuan'),
-                       Button(title='\U00002753Поддержка', type='postback', payload='sup')]
-
-            fb_bot.send_button_message(user_id, messages.pay_type, buttons)
-
-        elif payload == "trial":
-
-            buttons = [Button(title='\U0001F4B4Оплата', type='postback', payload='pay'),
-                       Button(title='\U00002753Поддержка', type='postback', payload='sup')]
-
-            fb_bot.send_button_message(user_id, messages.trial_text_vk, buttons)
-
-        elif payload == "turk":
-
-            buttons = [Button(title="Сайт обслуживания", type='web_url', url="url"),
-                       Button(title="Как подключить?", type='web_url',
-                              url="url")]
-            fb_bot.send_button_message(user_id, messages.turk, buttons)
-
-        elif payload == "sup":
-            support(user_id)
-
-        elif payload == "urgent":
-            support(user_id, urgent=True)
-
-        elif payload == "other":
-
-            buttons= [Button(title='\U0001F193Попробовать', type='postback', payload='trial'),
-                      Button(title='\U0001F1F9\U0001F1F2Туркменистан', type='postback', payload='turk'),
-                      Button(title='\U0001F6D2ZGC SHOP', type='web_url', url='url')]
-            fb_bot.send_button_message(user_id, messages.buttons_menu, buttons)
-
-        elif payload == "rub":
-            fb_bot.send_text_message(user_id, messages.rub_text_vk)
-
-        elif payload == "yuan":
-            fb_bot.send_text_message(user_id, messages.yuan_text_vk)
-
-        elif payload == "install":
-            fb_bot.send_text_message(user_id, messages.first_install)
-
-        elif payload == "sup_other":
-            fb_bot.send_text_message(user_id, messages.support_vk)
-
-        # If user rated quality less than 5 and pushed feedback button, open dialogue for one message only
-        elif payload == "wish":
-            fb_bot.send_text_message(user_id, messages.get_better)
-            update_clients(["fb_id", user_id], ["state", "ONE MESSAGE"], ["review_time", f"{int(time.time())}"])
-
-        # Buttons to rate the quality of support
-        elif payload in ["2", "4", "5"]:
-
-            # User has already rated
-            if get_info("rate", "fb_id", user_id) != "0":
-                fb_bot.send_text_message(user_id, "Вы уже поставили оценку, спасибо!")
-                return
-
-            # Ask user to make review if he gave the highest rate
-            if payload == "5":
-                buttons = [Button(title="\U0001F49B Отзыв", type='web_url',
-                                  url="url")]
-
-                fb_bot.send_button_message(user_id, "Если вам понравился наш сервис - оставьте отзыв, "
-                                                    "и мы предоставим вам 10 дней бесплатного VPN!\n\n"
-                                                    "Когда оставите отзыв свяжитесь с нами для получения бонуса",
-                                           buttons)
-
-            # Ask user to write feedback
-            else:
-                buttons = [Button(title='\U0001F4A1 Пожелание', type='postback', payload='wish')]
-                fb_bot.send_button_message(user_id, "Мы можем что-то улучшить в обслуживании?", buttons)
-
-            bot.send_message(config.group_id, f"Клиент `{user_id}` поставил вам {payload}", parse_mode='Markdown')
-            update_clients(["fb_id", user_id], ["rate", payload])
-
-    # --------------------------------------------------
-    def forward_fb_to_tg(message, review=False):
-        """ Send client message to support with client tariff info"""
-
-        user_id = message['sender']['id']
-
-        # Get user info by FB ID
-        req = requests.get(
-            f"https://graph.facebook.com/{user_id}?fields=first_name,last_name&access_token={config.fb_access_token}")
-        user_info = json.loads(req.text)
-
-        # Upper part of the message with emoji and name of the user
-        top = "\U0001F4E2 Отзыв\n" if review else f"\U0001F4AC {user_info['first_name']} {user_info['last_name']}\n"
-
-        # Bottom part of the message with id and social network name, so we can reply back
-        bottom = f"{str(user_id)} Facebook"
-
-        text = message['message'].get('text') or ''
-        attachments = message['message'].get('attachments')
-
-        if attachments:
-
-            # Check if already sent caption
-            caption_send = 0
-
-            for att in attachments:
-                message = top
-
-                # Send photo only with ID info caption, without message text
-                if not caption_send:
-                    message += text + "\n"
-
-                    # Change this so we don't send the same caption with other photo
-                    caption_send = 1
-
-                message += "\n"
-
-                # Add client tariff info
-                if not info_too_soon(user_id):
-                    message += "\n" + client_info_msg("fb_id", user_id)
-
-                message += bottom
-
-                if att['type'] == 'image':
-                    bot.send_photo(config.group_id, att['payload']['url'], message)
-        else:
-            message = top + text + "\n\n"
-
-            # Add client tariff info
-            if not info_too_soon(user_id):
-                message += "\n" + client_info_msg("fb_id", user_id)
-
-            message += bottom
-
-            bot.send_message(config.group_id, message)
-
-    # --------------------------------------------------
-    def verify_fb_token(token_sent):
-        """ FB verification function """
-        if token_sent == config.fb_verify_token:
-            return request.args['hub.challenge']
-        else:
-            return 'Invalid verification token'
-
-    # --------------------------------------------------
-    if __name__ == '__main__':
-        app.run(port=6262,
-                ssl_context=('two files'))
+#
+# def facebook():
+#     """" FB chat bot with reply and inline buttons. Identify user by ID, ask his email, transfer messages to support """
+#
+#     print("\nFacebook running")
+#
+#     app = Flask(__name__)
+#
+#     @app.route('/', methods=['GET', 'POST'])
+#     def receive_message():
+#
+#         # Facebook verification
+#         if request.method == 'GET':
+#             token_sent = request.args['hub.verify_token']
+#             return verify_fb_token(token_sent)
+#
+#         else:
+#             output = request.get_json()
+#
+#             for event in output['entry']:
+#                 messaging = event['messaging']
+#
+#                 for message in messaging:
+#                     message_handler(message)
+#
+#             return "Message Processed"
+#
+#     # --------------------------------------------------
+#     def message_handler(message):
+#         """ Check if user ID in base or ask for email, transfer message to TG group if identified client """
+#
+#         user_id = message['sender']['id']
+#
+#         # Do not react on our own messages
+#         if user_id == config.fb_group_id:
+#             return
+#
+#         text = message['message'].get('text') if message.get('message') else ""
+#         payload = message['postback'].get('payload') if message.get('postback') else None
+#
+#         # User ID not found in DB
+#         if not db_find_value("fb_id", user_id):
+#
+#             # Check if message text has '@' between some non-space symbols
+#             if not text or not re.findall(r"\S+@\S+", text):
+#                 fb_bot.send_text_message(user_id, messages.send_email)
+#                 return
+#
+#             # Suppose user entered email, look for it in database
+#             email = re.findall(r"\S+@\S+", text)[0].lower()
+#             email_info = db_find_value("email", email)
+#
+#             # Email not found, insert new row in DB with that email and user ID
+#             if not email_info:
+#                 new_client(email, "fb_id", user_id)
+#                 send_initial_buttons(user_id)
+#
+#             # Email is already used by user with other ID, ask to immediately contact us
+#             elif email_info[6] != "0":
+#                 new_client("-", "fb_id", user_id)
+#                 open_dialogue("fb_id", user_id)
+#                 fb_bot.send_text_message(user_id, messages.email_already_used)
+#
+#             # Email found in DB and not used by other ID, update DB
+#             else:
+#                 update_clients(["email", email], ["fb_id", user_id])
+#                 send_initial_buttons(user_id)
+#
+#             return
+#
+#         # User pushed buttons
+#         if payload in ["pay", "trial", "sup", "turk", "urgent", "other", "rub", "yuan", "install", "sup_other",
+#                        "wish", "2", "4", "5"]:
+#             buttons_handler(user_id, payload)
+#
+#             return
+#
+#         user_state = get_info("state", "fb_id", user_id)
+#         # User identified, dialogue is open, transfer message to support
+#         if user_state in ["OPEN", "REMINDED", "PAY"]:
+#             forward_fb_to_tg(message)
+#
+#             # Notify user that we received his message (once per dialogue)
+#             if get_info("received", "fb_id", user_id) == "NO":
+#                 fb_bot.send_text_message(user_id, "Ваше сообщение передано в поддержку. "
+#                                                   "Мы постараемся ответить как можно быстрее!")
+#                 update_clients(["fb_id", user_id], ["received", "YES"])
+#
+#             if user_state == "REMINDED":
+#                 open_dialogue("fb_id", user_id)
+#
+#             return
+#
+#         # User identified, dialogue is closed, ask him to use buttons
+#         if user_state == "CLOSED":
+#             send_initial_buttons(user_id, reply=True)
+#             return
+#
+#         # User pushed the feedback button after previous support conversation was closed.
+#         # Suppose user entering one-message review
+#         if user_state == "ONE MESSAGE":
+#             time_past = int(time.time()) - int(get_info("review_time", "fb_id", user_id))
+#
+#             if time_past // 3600 >= 24:
+#                 fb_bot.send_text_message(user_id, messages.buttons_menu)
+#
+#             else:
+#                 forward_fb_to_tg(message, review=True)
+#                 fb_bot.send_text_message(user_id, "Спасибо за отзыв!")
+#
+#             update_clients(["fb_id", user_id], ["state", "CLOSED"])
+#
+#     # --------------------------------------------------
+#     def send_initial_buttons(id, reply=False):
+#         """ Send message with starting buttons """
+#
+#         buttons = [Button(title='\U0001F4B4Оплата', type='postback', payload='pay'),
+#                    Button(title='\U00002753Поддержка', type='postback', payload='sup'),
+#                    Button(title='Другое', type='postback', payload='other')]
+#
+#         text = messages.push_buttons if reply else messages.buttons_menu
+#         fb_bot.send_button_message(recipient_id=id, text=text, buttons=buttons)
+#
+#     # --------------------------------------------------
+#     def support(user_id, urgent=False):
+#         """ Handles every attempt to open support dialogue. Do not open if not urgent and not in working time """
+#
+#         if not urgent:
+#
+#             # User trying to contact support in non working time
+#             if not 17 <= datetime.datetime.today().hour < 22 or datetime.datetime.today().isoweekday() in [6, 7]:
+#                 buttons = [Button(title='Срочно', type='postback', payload='urgent')]
+#
+#                 fb_bot.send_button_message(user_id, messages.non_working, buttons)
+#
+#                 return
+#
+#         open_dialogue("fb_id", user_id)
+#
+#         buttons = [Button(title='Настройка', type='postback', payload='install'),
+#                    Button(title='Другое', type='postback', payload='sup_other')]
+#
+#         # Ask user to choose problem type
+#         msg = messages.type_support
+#         sub = get_info("sub", "fb_id", user_id)
+#         if sub != '-' and int(get_info("verified", "fb_id", user_id)):
+#             msg += f"\U000026A1 Ваша подписка: {sub}"
+#         fb_bot.send_button_message(user_id, msg, buttons)
+#
+#     # --------------------------------------------------
+#     def buttons_handler(user_id, payload):
+#         """ Handles all available buttons """
+#
+#         if payload == "pay":
+#             open_dialogue("fb_id", user_id, state="PAY")
+#
+#             buttons = [Button(title='Рубли ₽ / Гривны ₴', type='postback', payload='rub'),
+#                        Button(title='Юани ¥', type='postback', payload='yuan'),
+#                        Button(title='\U00002753Поддержка', type='postback', payload='sup')]
+#
+#             fb_bot.send_button_message(user_id, messages.pay_type, buttons)
+#
+#         elif payload == "trial":
+#
+#             buttons = [Button(title='\U0001F4B4Оплата', type='postback', payload='pay'),
+#                        Button(title='\U00002753Поддержка', type='postback', payload='sup')]
+#
+#             fb_bot.send_button_message(user_id, messages.trial_text_vk, buttons)
+#
+#         elif payload == "turk":
+#
+#             buttons = [Button(title="Сайт обслуживания", type='web_url', url="url"),
+#                        Button(title="Как подключить?", type='web_url',
+#                               url="url")]
+#             fb_bot.send_button_message(user_id, messages.turk, buttons)
+#
+#         elif payload == "sup":
+#             support(user_id)
+#
+#         elif payload == "urgent":
+#             support(user_id, urgent=True)
+#
+#         elif payload == "other":
+#
+#             buttons= [Button(title='\U0001F193Попробовать', type='postback', payload='trial'),
+#                       Button(title='\U0001F1F9\U0001F1F2Туркменистан', type='postback', payload='turk'),
+#                       Button(title='\U0001F6D2ZGC SHOP', type='web_url', url='url')]
+#             fb_bot.send_button_message(user_id, messages.buttons_menu, buttons)
+#
+#         elif payload == "rub":
+#             fb_bot.send_text_message(user_id, messages.rub_text_vk)
+#
+#         elif payload == "yuan":
+#             fb_bot.send_text_message(user_id, messages.yuan_text_vk)
+#
+#         elif payload == "install":
+#             fb_bot.send_text_message(user_id, messages.first_install)
+#
+#         elif payload == "sup_other":
+#             fb_bot.send_text_message(user_id, messages.support_vk)
+#
+#         # If user rated quality less than 5 and pushed feedback button, open dialogue for one message only
+#         elif payload == "wish":
+#             fb_bot.send_text_message(user_id, messages.get_better)
+#             update_clients(["fb_id", user_id], ["state", "ONE MESSAGE"], ["review_time", f"{int(time.time())}"])
+#
+#         # Buttons to rate the quality of support
+#         elif payload in ["2", "4", "5"]:
+#
+#             # User has already rated
+#             if get_info("rate", "fb_id", user_id) != "0":
+#                 fb_bot.send_text_message(user_id, "Вы уже поставили оценку, спасибо!")
+#                 return
+#
+#             # Ask user to make review if he gave the highest rate
+#             if payload == "5":
+#                 buttons = [Button(title="\U0001F49B Отзыв", type='web_url',
+#                                   url="url")]
+#
+#                 fb_bot.send_button_message(user_id, "Если вам понравился наш сервис - оставьте отзыв, "
+#                                                     "и мы предоставим вам 10 дней бесплатного VPN!\n\n"
+#                                                     "Когда оставите отзыв свяжитесь с нами для получения бонуса",
+#                                            buttons)
+#
+#             # Ask user to write feedback
+#             else:
+#                 buttons = [Button(title='\U0001F4A1 Пожелание', type='postback', payload='wish')]
+#                 fb_bot.send_button_message(user_id, "Мы можем что-то улучшить в обслуживании?", buttons)
+#
+#             bot.send_message(config.group_id, f"Клиент `{user_id}` поставил вам {payload}", parse_mode='Markdown')
+#             update_clients(["fb_id", user_id], ["rate", payload])
+#
+#     # --------------------------------------------------
+#     def forward_fb_to_tg(message, review=False):
+#         """ Send client message to support with client tariff info"""
+#
+#         user_id = message['sender']['id']
+#
+#         # Get user info by FB ID
+#         req = requests.get(
+#             f"https://graph.facebook.com/{user_id}?fields=first_name,last_name&access_token={config.fb_access_token}")
+#         user_info = json.loads(req.text)
+#
+#         # Upper part of the message with emoji and name of the user
+#         top = "\U0001F4E2 Отзыв\n" if review else f"\U0001F4AC {user_info['first_name']} {user_info['last_name']}\n"
+#
+#         # Bottom part of the message with id and social network name, so we can reply back
+#         bottom = f"{str(user_id)} Facebook"
+#
+#         text = message['message'].get('text') or ''
+#         attachments = message['message'].get('attachments')
+#
+#         if attachments:
+#
+#             # Check if already sent caption
+#             caption_send = 0
+#
+#             for att in attachments:
+#                 message = top
+#
+#                 # Send photo only with ID info caption, without message text
+#                 if not caption_send:
+#                     message += text + "\n"
+#
+#                     # Change this so we don't send the same caption with other photo
+#                     caption_send = 1
+#
+#                 message += "\n"
+#
+#                 # Add client tariff info
+#                 if not info_too_soon(user_id):
+#                     message += "\n" + client_info_msg("fb_id", user_id)
+#
+#                 message += bottom
+#
+#                 if att['type'] == 'image':
+#                     bot.send_photo(config.group_id, att['payload']['url'], message)
+#         else:
+#             message = top + text + "\n\n"
+#
+#             # Add client tariff info
+#             if not info_too_soon(user_id):
+#                 message += "\n" + client_info_msg("fb_id", user_id)
+#
+#             message += bottom
+#
+#             bot.send_message(config.group_id, message)
+#
+#     # --------------------------------------------------
+#     def verify_fb_token(token_sent):
+#         """ FB verification function """
+#         if token_sent == config.fb_verify_token:
+#             return request.args['hub.challenge']
+#         else:
+#             return 'Invalid verification token'
+#
+#     # --------------------------------------------------
+#     if __name__ == '__main__':
+#         app.run(port=6262,
+#                 ssl_context=('two files'))
 
 
 # ██████╗░░█████╗░████████╗░█████╗░██████╗░░█████╗░░██████╗███████╗
@@ -1889,135 +1889,135 @@ def facebook():
 # ██║░░██║██╔══██║░░░██║░░░██╔══██║██╔══██╗██╔══██║░╚═══██╗██╔══╝░░
 # ██████╔╝██║░░██║░░░██║░░░██║░░██║██████╦╝██║░░██║██████╔╝███████╗
 # ╚═════╝░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚═════╝░╚═╝░░╚═╝╚═════╝░╚══════╝
-
-def database():
-    """ Update local database every minute and check for expiring tariffs """
-
-    print("\nDatabase running")
-
-    def update_db():
-        """ First add new clients to DB, then update those who are not clients anymore """
-
-        # Get current tariffs info
-        global tariffs_base
-        fin_acc = gc.open_by_key("key").worksheet('Тарифы')
-        tariffs_base = {i[0]: [i[1], i[2], i[3]] for i in fin_acc.get_all_values()[1:]}
-        print("Tariffs updated")
-
-        # Get all actual clients info
-        all_values = acc.get_all_values()[4:]
-        email = [i[4].lower() for i in all_values]
-        date = [i[5] for i in all_values]
-        tariff = [i[2] for i in all_values]
-        sub = [i[6] for i in all_values]
-
-        with sql.connect(config.db_file) as con:
-            cur = con.cursor()
-            cur.execute("SELECT * FROM clients")
-            res = cur.fetchall()
-
-            db_emails = [i[0] for i in res]
-
-            # Check for every client from google sheets
-            for i, address in enumerate(email):
-                client = (address, date[i], tariff[i], sub[i], 0, 0, 0, "CLOSED", "0", "0", "NO", 0)
-
-                # Insert new row
-                if address not in db_emails:
-                    cur.execute("INSERT INTO clients VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", client)
-                    print(f"New client: {client[:3]}")
-
-                # Update existing row
-                else:
-                    cur.execute("UPDATE clients SET date = ?, tariff = ?, sub = ? WHERE email = ?",
-                                client[1:4] + client[0:1])
-
-            # Check for every client from DB that is off from google sheets and update his tariff info in DB
-            for i, address in enumerate(db_emails):
-                if address not in email:
-
-                    cur.execute("UPDATE clients SET date = '-', tariff = '-', sub = '-' WHERE email = ?",
-                                (address,))
-
-    # --------------------------------------------------
-    def reminder():
-        """ Gather info about expiring tariffs and notify clients """
-
-        with sql.connect(config.db_file) as con:
-            cur = con.cursor()
-            cur.execute("SELECT date, tg_id, vk_id, fb_id FROM clients")
-            clients = cur.fetchall()
-
-        today = datetime.datetime.today()
-
-        for cl in clients:
-
-            # Not our client anymore
-            if cl[0] == "-":
-                continue
-
-            date = cl[0].split('.')  # Date is stored in dd.mm.yyyy format
-            date = datetime.datetime(int(date[2]), int(date[1]), int(date[0]), 0, 0, 0)
-
-            time_left = date - today
-            time_left = (time_left.days * 24 * 60 * 60) + time_left.seconds
-
-            notify_clients("tg_id", cl[1], time_left)
-            notify_clients("vk_id", cl[2], time_left)
-            notify_clients("fb_id", cl[3], time_left)
-
-        # Update pinned message with info about those who were reminded
-        if notified_clients:
-            text = "\U0001F514 Напомнил об оплате:\n"
-            for i in notified_clients:
-                text += i + "\n"
-
-            #update_pinned_bottom(text)
-
-    # --------------------------------------------------
-    def notify_clients(type_id, id, time_left):
-        """ Check if time_left is 3 days or 1 day in seconds (minus 18 hours so we remind at 18:00 Beijing).
-         Gap is 59 seconds because cycle repeats every 60 seconds, so it will not repeat on 1-60 'borders' """
-
-        if id == "0":
-            return
-
-        message = ""
-
-        if 194341 <= time_left <= 194400:  # 3 days left
-            message = messages.left3days
-        elif 21541 <= time_left <= 21600:  # 1 day left
-            message = messages.left1day
-        elif -64859 <= time_left <= -64800:  # Tariff expired
-            message = messages.left_today
-
-        if message:
-            if type_id == "tg_id":
-                buttons = types.InlineKeyboardMarkup()
-                buttons.add(types.InlineKeyboardButton(text="\U0001F4B4 Оплата", callback_data="pay"))
-                bot.send_message(int(id), message, reply_markup=buttons)
-            elif type_id == "vk_id":
-                keyboard = VkKeyboard(inline=True)
-                keyboard.add_button("\U0001F4B4Оплата")
-                vk_send_message(id, message, keyboard.get_keyboard())
-            elif type_id == "fb_id":
-                fb_bot.send_text_message(int(id), message)
-
-            update_clients([type_id, id], ['state', 'REMINDED'])
-            notified_clients.add(get_info("email", type_id, id))
-
-            print(f"Notification sent to {type_id} {id}\n")
-
-
-    # --------------------------------------------------
-    while True:
-        update_db()
-
-        # Update DB every 15 minutes
-        for i in range(15):
-            notified_clients = set()
-            reminder()
-            time.sleep(60)
+#
+# def database():
+#     """ Update local database every minute and check for expiring tariffs """
+#
+#     print("\nDatabase running")
+#
+#     def update_db():
+#         """ First add new clients to DB, then update those who are not clients anymore """
+#
+#         # Get current tariffs info
+#         global tariffs_base
+#         fin_acc = gc.open_by_key("key").worksheet('Тарифы')
+#         tariffs_base = {i[0]: [i[1], i[2], i[3]] for i in fin_acc.get_all_values()[1:]}
+#         print("Tariffs updated")
+#
+#         # Get all actual clients info
+#         all_values = acc.get_all_values()[4:]
+#         email = [i[4].lower() for i in all_values]
+#         date = [i[5] for i in all_values]
+#         tariff = [i[2] for i in all_values]
+#         sub = [i[6] for i in all_values]
+#
+#         with sql.connect(config.db_file) as con:
+#             cur = con.cursor()
+#             cur.execute("SELECT * FROM clients")
+#             res = cur.fetchall()
+#
+#             db_emails = [i[0] for i in res]
+#
+#             # Check for every client from google sheets
+#             for i, address in enumerate(email):
+#                 client = (address, date[i], tariff[i], sub[i], 0, 0, 0, "CLOSED", "0", "0", "NO", 0)
+#
+#                 # Insert new row
+#                 if address not in db_emails:
+#                     cur.execute("INSERT INTO clients VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", client)
+#                     print(f"New client: {client[:3]}")
+#
+#                 # Update existing row
+#                 else:
+#                     cur.execute("UPDATE clients SET date = ?, tariff = ?, sub = ? WHERE email = ?",
+#                                 client[1:4] + client[0:1])
+#
+#             # Check for every client from DB that is off from google sheets and update his tariff info in DB
+#             for i, address in enumerate(db_emails):
+#                 if address not in email:
+#
+#                     cur.execute("UPDATE clients SET date = '-', tariff = '-', sub = '-' WHERE email = ?",
+#                                 (address,))
+#
+#     # --------------------------------------------------
+#     def reminder():
+#         """ Gather info about expiring tariffs and notify clients """
+#
+#         with sql.connect(config.db_file) as con:
+#             cur = con.cursor()
+#             cur.execute("SELECT date, tg_id, vk_id, fb_id FROM clients")
+#             clients = cur.fetchall()
+#
+#         today = datetime.datetime.today()
+#
+#         for cl in clients:
+#
+#             # Not our client anymore
+#             if cl[0] == "-":
+#                 continue
+#
+#             date = cl[0].split('.')  # Date is stored in dd.mm.yyyy format
+#             date = datetime.datetime(int(date[2]), int(date[1]), int(date[0]), 0, 0, 0)
+#
+#             time_left = date - today
+#             time_left = (time_left.days * 24 * 60 * 60) + time_left.seconds
+#
+#             notify_clients("tg_id", cl[1], time_left)
+#             notify_clients("vk_id", cl[2], time_left)
+#             notify_clients("fb_id", cl[3], time_left)
+#
+#         # Update pinned message with info about those who were reminded
+#         if notified_clients:
+#             text = "\U0001F514 Напомнил об оплате:\n"
+#             for i in notified_clients:
+#                 text += i + "\n"
+#
+#             #update_pinned_bottom(text)
+#
+#     # --------------------------------------------------
+#     def notify_clients(type_id, id, time_left):
+#         """ Check if time_left is 3 days or 1 day in seconds (minus 18 hours so we remind at 18:00 Beijing).
+#          Gap is 59 seconds because cycle repeats every 60 seconds, so it will not repeat on 1-60 'borders' """
+#
+#         if id == "0":
+#             return
+#
+#         message = ""
+#
+#         if 194341 <= time_left <= 194400:  # 3 days left
+#             message = messages.left3days
+#         elif 21541 <= time_left <= 21600:  # 1 day left
+#             message = messages.left1day
+#         elif -64859 <= time_left <= -64800:  # Tariff expired
+#             message = messages.left_today
+#
+#         if message:
+#             if type_id == "tg_id":
+#                 buttons = types.InlineKeyboardMarkup()
+#                 buttons.add(types.InlineKeyboardButton(text="\U0001F4B4 Оплата", callback_data="pay"))
+#                 bot.send_message(int(id), message, reply_markup=buttons)
+#             elif type_id == "vk_id":
+#                 keyboard = VkKeyboard(inline=True)
+#                 keyboard.add_button("\U0001F4B4Оплата")
+#                 vk_send_message(id, message, keyboard.get_keyboard())
+#             elif type_id == "fb_id":
+#                 fb_bot.send_text_message(int(id), message)
+#
+#             update_clients([type_id, id], ['state', 'REMINDED'])
+#             notified_clients.add(get_info("email", type_id, id))
+#
+#             print(f"Notification sent to {type_id} {id}\n")
+#
+#
+#     # --------------------------------------------------
+#     while True:
+#         update_db()
+#
+#         # Update DB every 15 minutes
+#         for i in range(15):
+#             notified_clients = set()
+#             reminder()
+#             time.sleep(60)
 
 
 # --------------------------------------------------
@@ -2031,34 +2031,34 @@ def tg_init():
 
 
 # --------------------------------------------------
-def vk_init():
-    while True:
-        try:
-            vkontakte()
-        except Exception as e:
-            print("VK init error, restarting")
-            time.sleep(3)
+# def vk_init():
+#     while True:
+#         try:
+#             vkontakte()
+#         except Exception as e:
+#             print("VK init error, restarting")
+#             time.sleep(3)
 
 
 # --------------------------------------------------
-def fb_init():
-    while True:
-        try:
-            facebook()
-        except Exception as e:
-            print("FB init error, restarting")
-            time.sleep(3)
+# def fb_init():
+#     while True:
+#         try:
+#             facebook()
+#         except Exception as e:
+#             print("FB init error, restarting")
+#             time.sleep(3)
 
 
 # --------------------------------------------------
-def db_init():
-    while True:
-        try:
-            database()
-
-        except Exception as e:
-            print("DB init error, restarting")
-            time.sleep(60)
+# def db_init():
+#     while True:
+#         try:
+#             database()
+#
+#         except Exception as e:
+#             print("DB init error, restarting")
+#             time.sleep(60)
 
 
 # --------------------------------------------------
@@ -2082,8 +2082,8 @@ def start_bot():
     bot = telebot.TeleBot(config.tg_token, skip_pending=True)
 
     # Vkontakte bot
-    vk_session = vk_api.VkApi(token=config.token_vk)
-    vk = vk_session.get_api()
+    # vk_session = vk_api.VkApi(token=config.token_vk)
+    # vk = vk_session.get_api()
 
     # Facebook bot
     fb_bot = Bot(config.fb_access_token)
