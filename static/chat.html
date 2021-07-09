@@ -51,60 +51,20 @@
                     <ul class="hidden-menu hidden-menu-text">
                         <h6 class="hidden-menu-header">Выберите действие</h6>
 
+                        <div v-for="(el,i) in cmd_buttons" :key="i">
+                            <div @click="(e)=>{ sendCmd('/' + el.text); }"
+                                 class="row btn btn-lg hidden-menu-btn drop-down-btn">
+
+                                <img class="centered-img" :src="'icons/' + el.icon">
+                                <span class="pull-left menu-cmd">{{el.text}}</span>
+
+                            </div>
+                        </div>
                         <div @click="(e)=>{ sendCmd('/ZGC SHOP'); }"
                              class="row btn btn-lg hidden-menu-btn drop-down-btn">
 
                             <img class="centered-img" src="icons/shopping-cart%201.svg">
                             <span class="pull-left menu-cmd">ZGC SHOP</span>
-
-                        </div>
-
-                        <div @click="(e)=>{ sendCmd('/Для Туркменистана'); }"
-                             class="row btn btn-lg hidden-menu-btn drop-down-btn">
-
-                            <img class="centered-img" src="icons/turkmenistan%201.svg">
-                            <span class="pull-left menu-cmd">Для Туркменистана</span>
-
-                        </div>
-
-
-                        <div @click="(e)=>{ sendCmd('/Пробный период'); }"
-                             class="row btn btn-lg hidden-menu-btn drop-down-btn">
-
-                            <img class="centered-img" src="icons/key%201.svg">
-                            <span class="pull-left menu-cmd">Пробный период</span>
-
-                        </div>
-
-                        <div @click="(e)=>{ sendCmd('/Связаться с поддержкой'); }"
-                             class="row btn btn-lg hidden-menu-btn drop-down-btn">
-
-                            <img class="centered-img" src="icons/customer-service%201.svg">
-                            <span class="pull-left menu-cmd">Связаться с поддержкой</span>
-
-                        </div>
-                        <div @click="(e)=>{ sendCmd('/Оплата'); }"
-                             class="row btn btn-lg hidden-menu-btn drop-down-btn">
-
-                            <img class="centered-img" src="icons/Vector.svg">
-                            <span class="pull-left menu-cmd">Оплата</span>
-
-                        </div>
-
-
-                        <div @click="(e)=>{ sendCmd('/Узнать больше'); }"
-                             class="row btn btn-lg hidden-menu-btn drop-down-btn">
-
-                            <img class="centered-img" src="icons/info-button%201.svg">
-                            <span class="pull-left menu-cmd">Узнать больше</span>
-
-                        </div>
-
-                        <div @click="(e)=>{ sendCmd('/Сотрудничество'); }"
-                             class="row btn btn-lg hidden-menu-btn drop-down-btn">
-
-                            <img class="centered-img" src="icons/hand-shake%201.svg">
-                            <span class="pull-left menu-cmd">Сотрудничество</span>
 
                         </div>
 
@@ -169,7 +129,8 @@
                             <div v-if="message.from==='bot_cmd'" class="media media-chat media-chat-btn">
                                 <div class="media-body">
                                     <button class="btn btn-primary bot-cmd"
-                                            @click="(e)=>{ sendCmd(message.cmd); }">{{ message.message }}</button>
+                                            @click="(e)=>{ sendCmd(message.cmd); }">{{ message.message }}
+                                    </button>
                                 </div>
                             </div>
 
@@ -260,14 +221,6 @@
                                  x-placement="bottom-start">
 
 
-                                <div @click="(e)=>{ sendCmd('/ZGC SHOP'); }"
-                                     class="row dropdown-item  btn btn-lg hidden-menu-btn drop-down-btn">
-
-                                    <img class="centered-img" src="icons/shopping-cart%201.svg">
-                                    <span class="pull-left menu-cmd">ZGC SHOP</span>
-
-                                </div>
-
                                 <div @click="(e)=>{ sendCmd('/Для Туркменистана'); }"
                                      class="row dropdown-item btn btn-lg hidden-menu-btn drop-down-btn">
 
@@ -276,46 +229,17 @@
 
                                 </div>
 
-
-                                <div @click="(e)=>{ sendCmd('/Пробный период'); }"
+                                <div v-for="(el, i) in cmd_buttons" :key="i">
+                                    <div @click="(e)=>{ sendCmd('/' + el.text); }"
                                      class="row dropdown-item btn btn-lg hidden-menu-btn drop-down-btn">
 
-                                    <img class="centered-img" src="icons/key%201.svg">
-                                    <span class="pull-left menu-cmd">Пробный период</span>
+                                    <img class="centered-img" :src="'icons/' + el.icon">
+                                    <span class="pull-left menu-cmd">{{el.text}}</span>
 
                                 </div>
-
-                                <div @click="(e)=>{ sendCmd('/Связаться с поддержкой'); }"
-                                     class="row dropdown-item btn btn-lg hidden-menu-btn drop-down-btn">
-
-                                    <img class="centered-img" src="icons/customer-service%201.svg">
-                                    <span class="pull-left menu-cmd">Связаться с поддержкой</span>
-
-                                </div>
-                                <div @click="(e)=>{ sendCmd('/Оплата'); }"
-                                     class="row dropdown-item btn btn-lg hidden-menu-btn drop-down-btn">
-
-                                    <img class="centered-img" src="icons/Vector.svg">
-                                    <span class="pull-left menu-cmd">Оплата</span>
-
                                 </div>
 
 
-                                <div @click="(e)=>{ sendCmd('/Узнать больше'); }"
-                                     class="row dropdown-item btn btn-lg hidden-menu-btn drop-down-btn">
-
-                                    <img class="centered-img" src="icons/info-button%201.svg">
-                                    <span class="pull-left menu-cmd">Узнать больше</span>
-
-                                </div>
-
-                                <div @click="(e)=>{ sendCmd('/Сотрудничество'); }"
-                                     class="row dropdown-item btn btn-lg hidden-menu-btn drop-down-btn">
-
-                                    <img class="centered-img" src="icons/hand-shake%201.svg">
-                                    <span class="pull-left menu-cmd">Сотрудничество</span>
-
-                                </div>
 
                             </div>
 
@@ -468,6 +392,7 @@
         return await response.json(); // parses JSON response into native JavaScript objects
     }
 
+
     function initWS() {
 
         let socket = new WebSocket("wss://zgc.su/botws");
@@ -522,15 +447,61 @@
     let site_lang = "ru";
 
 
-    function getAllCommands(){
-        let commands_file = postData("/commands",{});
-        let commands = commands_file['commands'];
-        let cmd_buttons = [];
-        let cmds = {};
+    async function httpPost(url, data) {
+        const response = await fetch(url, {
+            method: 'POST', // или 'PUT'
+            body: JSON.stringify(data), // данные могут быть 'строкой' или {объектом}!
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        return await response.json();
+    }
 
-        for(let i = 0; i < commands.length; i++){
-            cmds['/'+commands['text']] = commands['answer']
-        }
+    async function httpGet(url) {
+        const response = await fetch(url).then((response) => {
+            return response.json();
+        });
+
+
+        return response;
+    }
+
+    async function getAllCommands() {
+
+        fetch('/commands')
+            .then(response => {
+
+                return response.json();
+            })
+            .then(data => {
+                console.log('commands');
+                let commands = data['commands'];
+                let cmd_buttons = [];
+                let cmds = {};
+
+
+                console.log(commands);
+                console.log('commands');
+
+                for (let i = 0; i < commands.length; i++) {
+                    cmds['/' + commands[i]['text']] = commands[i]['answer'];
+                    cmd_buttons.push({'icon': commands[i]['icon'], 'text': commands[i]['text']});
+                }
+
+                app.cmds = cmds;
+                app.cmd_buttons = cmd_buttons;
+
+                console.log(cmd_buttons);
+                console.log('cmd_buttons');
+                console.log(cmds);
+                console.log('cmds');
+
+                console.log(app.cmd_buttons);
+                console.log('this.cmd_buttons');
+                console.log(app.cmds);
+                console.log('this.cmds');
+            });
 
     }
 
@@ -589,11 +560,20 @@
             dialogOpenedMsg5: 'https://t.me/ZGC_VPN_BOT',
 
 
+            cmd_buttons: [],
+            cmds: {},
+
+
             first_ws_msg_was: false,
 
         },
 
         created: () => {
+
+
+            getAllCommands();
+
+
             msg_container = document.querySelector('#chat-content');
 
             bottom_msg = document.getElementById('bottom_msg');
@@ -796,10 +776,10 @@
 
                 if (msg === '/Оплата') {
                     this.client_state = 'pay';
-                } else if(msg === '/yuan'){
+                } else if (msg === '/yuan') {
                     this.client_state = 'pay';
                     this.pay_type = 'yuan';
-                } else if(msg === '/rub'){
+                } else if (msg === '/rub') {
                     this.client_state = 'pay';
                     this.pay_type = 'rub';
                 } else {
