@@ -417,16 +417,12 @@
     }
 
 
-
-
     let msg_container = null;
-
 
     let bottom_msg;
 
-    let url_prefix = "/botweb";
+    let url_prefix = "";
     let ws_prefix = "botws/";
-
 
     function msgEnter(e) {
 
@@ -437,7 +433,6 @@
             return false;
         }
     }
-
 
     function emailEnter(e) {
         if (e.which == 13 || e.keyCode == 13) {
@@ -453,7 +448,6 @@
         let bottom_el = document.getElementById('bottom_msg');
         bottom_el.scrollIntoView();
     }
-
 
     async function postData(url = url_prefix + '/chat', data = {}) {
         // Default options are marked with *
@@ -473,7 +467,6 @@
         });
         return await response.json(); // parses JSON response into native JavaScript objects
     }
-
 
     function initWS() {
 
@@ -528,6 +521,20 @@
 
     let site_lang = "ru";
 
+
+    function getAllCommands(){
+        let commands_file = postData("/commands",{});
+        let commands = commands_file['commands'];
+        let cmd_buttons = [];
+        let cmds = {};
+
+        for(let i = 0; i < commands.length; i++){
+            cmds['/'+commands['text']] = commands['answer']
+        }
+
+    }
+
+
     var app = new Vue({
         el: '#v-app',
         data: {
@@ -545,13 +552,7 @@
 
             ],
 
-
             texts: {},
-
-            ru_texts: {},
-
-            en_texts: {},
-
 
             styleObject: {
                 overflow: 'hidden'

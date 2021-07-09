@@ -1,0 +1,52 @@
+{
+  "commands": [
+    {
+      "icon": "shopping-cart%201.svg",
+      "text": "ZGC SHOP",
+      "answer": [
+        {"from": "bot", "message": "Узнайте все о наших продуктах"},
+        {"from": "bot_link", "message": "связаться с поддержкой", "cmd": "https://market.zgc.su/"}
+      ]
+    },
+    {
+      "icon": "turkmenistan%201.svg",
+      "text": "Для Туркменистана",
+      "answer": [
+        {
+          "from": "bot",
+          "message": "Для перехода на сайт для жителей Туркменистана нажмите 'Сайт обслуживания'\\n\\n\" \\\n       \"Для получения информации по подключению нажмите 'Как подключить?'\\n\\n\" \\\n       \"В случае возникновения срочного вопроса пишите на почту с темой письма «ТМ» vpn@zgc.su",
+        },
+        {"from": "bot_link", "message": "Сайт обслуживания", "cmd": "https://tm.zgc.su/"},
+        {"from": "bot_link", "message": "Как подключить?", "cmd": "https://sites.google.com/view/zgcvpn/try?authuser=0"}
+      ]
+    },
+    {
+      "icon": "key%201.svg",
+      "text": "Пробный период",
+      "answer": [
+        {
+          "from": "bot",
+          "message": "Чтобы получить пробный период укажите вашу почту на сайте. Сделать это можно только один раз."
+        },
+        {"from": "bot_cmd", "message": "Связаться с поддержкой", "cmd": "/Связаться с поддержкой"},
+        {"from": "bot_link", "message": "http://zgcvpn.ru", "cmd": "http://zgcvpn.ru"}
+      ]
+    },
+    {
+      "icon": "customer-service%201.svg",
+      "text": "Связаться с поддержкой",
+      "answer": [
+        {"from": "bot_ws_action"},
+        {"from": "bot", "message": "Dialog opened"}
+      ]
+    },
+    {
+      "icon": "hand-shake%201.svg",
+      "text": "Сотрудничество",
+      "answer": [
+        {"from": "bot", "message": "Вы можете описать свое предложение, перейдя по ссылке ниже"},
+        {"from": "bot_link", "message": "Сделать предложение", "cmd": "https://zgcvpn.ru/partnership"}
+      ]
+    }
+  ]
+}

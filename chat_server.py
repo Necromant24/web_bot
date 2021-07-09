@@ -44,6 +44,10 @@ def hello2():
 def hello():
     return redirect(url_prefix+"/static/chat.html", code=302)
 
+@app.route(url_prefix+'/commands')
+def commands_file():
+    return send_from_directory("data_files", "commands.json")
+
 
 def send_img_to_tg(name, email):
     import telebot
