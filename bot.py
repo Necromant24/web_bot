@@ -4,6 +4,8 @@ import json
 import time
 import threading
 
+bot = telebot.TeleBot(config.tg_token, skip_pending=True)
+
 def telegram():
     print("\nTelegram running")
 
@@ -83,5 +85,4 @@ def run_bot():
     t1.join()
 
 if __name__ == '__main__':
-    bot = telebot.TeleBot(config.tg_token, skip_pending=True)
     run_bot()
