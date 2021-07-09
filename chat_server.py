@@ -145,6 +145,6 @@ def serve(app, host, port):
     app.run(host=host, port=port)
 
 
-
-print('starting server')
-serve(app, '127.0.0.1', 5000)
+if __name__ == '__main__':
+    print('starting server')
+    serve(app, '127.0.0.1', 5000)

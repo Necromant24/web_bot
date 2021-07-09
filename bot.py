@@ -1,5 +1,4 @@
 import config
-import messages
 import telebot
 import json
 import time
@@ -15,7 +14,7 @@ def telegram():
 
         # Bot info message
         if message.text and message.text.lower() == "/info":
-            bot.send_message(config.group_id, messages.info)
+            bot.send_message(config.group_id, "messages.info")
 
         # Message is reply to some message
         if message.reply_to_message:
@@ -72,16 +71,17 @@ def start_bot():
     t1.join()
 
 
+def run_bot():
+    import ws_chat_server as ws_server
+
+    t1 = threading.Thread(target=tg_init)
+
+    t5 = threading.Thread(target=ws_server.start_ws_server)
+    t5.start()
+
+    t1.start()
+    t1.join()
+
 if __name__ == '__main__':
-        # Telegram bot
-        bot = telebot.TeleBot(config.tg_token, skip_pending=True)
-
-        t1 = threading.Thread(target=tg_init)
-
-        import ws_chat_server as ws_server
-
-        t5 = threading.Thread(target=ws_server.start_ws_server)
-        t5.start()
-
-        t1.start()
-        t1.join()
+    bot = telebot.TeleBot(config.tg_token, skip_pending=True)
+    run_bot()
