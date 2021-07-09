@@ -1,2 +1,4 @@
 venv
 static/web_files
+__pycache__
+.idea
