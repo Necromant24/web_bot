@@ -91,7 +91,7 @@ def support_message():
     email = request.json['email']
     message = request.json['message']
 
-    message_data = "💬\n " + message + "\n\n" + client_info_msg("email", email) + "\nWeb_client"
+    message_data = "💬\n " + message + "\n\n" + "email: " + email + "\n\nWeb_client"
 
     print(message_data)
 

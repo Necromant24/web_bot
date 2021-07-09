@@ -395,7 +395,7 @@
 
     function initWS() {
 
-        let socket = new WebSocket("wss://zgc.su/botws");
+        let socket = new WebSocket(ws_path);
 
         socket.onopen = function (e) {
             console.log("[open] Соединение установлено");
@@ -476,6 +476,7 @@
             })
             .then(data => {
                 console.log('commands');
+                ws_path = data['ws_path'];
                 let commands = data['commands'];
                 let cmd_buttons = [];
                 let cmds = {};
@@ -505,6 +506,7 @@
 
     }
 
+    let ws_path = '';
 
     var app = new Vue({
         el: '#v-app',
@@ -572,6 +574,8 @@
 
 
             getAllCommands();
+
+
 
 
             msg_container = document.querySelector('#chat-content');
@@ -774,19 +778,6 @@
 
                 this.playSendAudio();
 
-                if (msg === '/Оплата') {
-                    this.client_state = 'pay';
-                } else if (msg === '/yuan') {
-                    this.client_state = 'pay';
-                    this.pay_type = 'yuan';
-                } else if (msg === '/rub') {
-                    this.client_state = 'pay';
-                    this.pay_type = 'rub';
-                } else {
-                    this.client_state = '';
-                }
-
-
                 if (msg.trim() === '') {
                     console.log('error - command is empty')
                     return;
@@ -796,67 +787,24 @@
 
                 this.messages.push(userMessage);
 
-                const processMessage = (bot_message) => {
-                    let message = {from: 'bot', 'message': bot_message.answer};
-                    let cmd_messages = bot_message.commands;
-                    this.messages.push(message);
-                    let regex = new RegExp('^http.://.');
-
-                    for (let i = 0; i < cmd_messages.length; i++) {
-                        if (cmd_messages[i][1].match(regex) != null) {
-                            this.messages.push({
-                                from: 'bot_link',
-                                message: cmd_messages[i][0],
-                                cmd: cmd_messages[i][1]
-                            });
-                        }
-
-                        let hash = cmd_messages[i][1][0];
-                        console.log(hash);
-
-                        if (hash === '/') {
-                            this.messages.push({from: 'bot_cmd', message: cmd_messages[i][0], cmd: cmd_messages[i][1]});
-                        }
-                    }
-
-                    goToBottom();
-                    setTimeout(goToBottom, 250);
-                    setTimeout(goToBottom, 600);
+                if(msg === '/Связаться с поддержкой' || msg === '/Connect to support'){
+                    this.connectToSupport();
                 }
 
-                postData('/chat', {message: msg})
-                    .then((data) => {
-                        processMessage(data);
 
-                        if (this.conn_to_sup_cmds.includes(msg)) {
+                console.log(this.cmds);
+                console.log(Object.keys( this.cmds));
+                if(Object.keys(this.cmds).includes(msg)){
+                    let answer = this.cmds[msg];
+                    for(let i = 0; i<answer.length; i++){
+                        this.messages.push(answer[i]);
+                    }
 
-                            let now = new Date();
-                            let utc_timestamp = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
-                                now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
-
-                            console.log(now);
-                            console.log(now.getUTCHours());
-                            console.log('-----------');
-
-                            // 17 < time < 22
-                            // разница меж китаем и UTC - 8 часов
-                            if ((9 < now.getUTCHours()) && (now.getUTCHours() < 14)) {
-                                let non_working = 'Мы работаем по Пекину с 17:00 до 22:00 в рабочие дни и сейчас не можем ответить на ваши вопросы. Если у вас есть срочный вопрос - нажмите кнопку Срочная связь и мы постараемся ответить как можно быстрее';
-                                app.messages.push({from: 'bot', message: non_working});
-                            }
-
-
-                            this.connectToSupport();
-                        }
-
-                        goToBottom();
-                    });
-
+                }
 
                 this.messageText = '';
                 this.burger_check = false;
-            }
-            ,
+            },
 
             sendWsMsg(msg_text) {
                 let msg = {message: msg_text, email: this.userEmail};

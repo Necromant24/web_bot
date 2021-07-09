@@ -1,4 +1,5 @@
 {
+  "ws_path": "ws://localhost:5500",
   "commands": [
     {
       "icon": "shopping-cart%201.svg",
