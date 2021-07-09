@@ -67,72 +67,72 @@ def client_info_msg(col_name, value):
 
 
 # -------------------------------------------------
-def get_open_dialogues():
-    """ Returns list of clients with open dialogues
-        If client has several IDs, pick one with priority tg > vk > fb
-        ID is written in monospaced font (`number`) so we can easily copy it for search"""
-
-    #test code - change test.db to database.db
-    with sql.connect("database.db") as con:
-        cur = con.cursor()
-        cur.execute("SELECT tg_id, vk_id, fb_id FROM clients WHERE state in ('OPEN', 'PAY')")
-        clients_open[:] = cur.fetchall()
-
-        for i, numbers in enumerate(clients_open):
-            if numbers[0] != '0':
-
-                try:
-                    name = bot.get_chat(numbers[0]).first_name
-                except Exception as e:
-                    name = "Unknown"
-
-                clients_open[i] = f"<code>{numbers[0]}</code> {name}"
-                continue
-
-            elif numbers[1] != '0':
-
-                try:
-                    name = vk.users.get(user_id=numbers[1])[0]['first_name']
-                except Exception as e:
-                    name = "Unknown"
-
-                clients_open[i] = f"<code>{numbers[1]}</code> {name}"
-                continue
-
-            elif numbers[2] != '0':
-                clients_open[i] = f"<code>{numbers[2]}</code> FB"
-                continue
-
-        return clients_open
+# def get_open_dialogues():
+#     """ Returns list of clients with open dialogues
+#         If client has several IDs, pick one with priority tg > vk > fb
+#         ID is written in monospaced font (`number`) so we can easily copy it for search"""
+#
+#     #test code - change test.db to database.db
+#     with sql.connect("database.db") as con:
+#         cur = con.cursor()
+#         cur.execute("SELECT tg_id, vk_id, fb_id FROM clients WHERE state in ('OPEN', 'PAY')")
+#         clients_open[:] = cur.fetchall()
+#
+#         for i, numbers in enumerate(clients_open):
+#             if numbers[0] != '0':
+#
+#                 try:
+#                     name = bot.get_chat(numbers[0]).first_name
+#                 except Exception as e:
+#                     name = "Unknown"
+#
+#                 clients_open[i] = f"<code>{numbers[0]}</code> {name}"
+#                 continue
+#
+#             elif numbers[1] != '0':
+#
+#                 try:
+#                     name = vk.users.get(user_id=numbers[1])[0]['first_name']
+#                 except Exception as e:
+#                     name = "Unknown"
+#
+#                 clients_open[i] = f"<code>{numbers[1]}</code> {name}"
+#                 continue
+#
+#             elif numbers[2] != '0':
+#                 clients_open[i] = f"<code>{numbers[2]}</code> FB"
+#                 continue
+#
+#         return clients_open
 
 
 # --------------------------------------------------
-def update_pinned_top():
-    """ Update upper part of pinned message that contains IDs of clients with open dialogues """
-
-    # Pinned message text is stored in file
-    with open("pinned.txt", "r+") as file:
-        op = get_open_dialogues()
-
-        top = "\U0001F5E3 Открытые диалоги:\n" + "\n".join(op)
-
-
-        bottom = file.read().split("==========")[1]
-        new_full = top + "\n==========" + bottom
-
-    with open("pinned.txt", "w") as file:
-        file.write(new_full)
-
-    try:
-        bot.edit_message_text(new_full, config.group_id, config.pinned_msg, parse_mode='HTML')
-    except Exception as e:
-        error_txt = sys.exc_info()[1].args[0]
-
-        if "message is not modified: specified new message content and reply markup are exactly the same" in error_txt:
-            pass
-
-        else:
-            log_report("Pinned edit", e)
+# def update_pinned_top():
+#     """ Update upper part of pinned message that contains IDs of clients with open dialogues """
+#
+#     # Pinned message text is stored in file
+#     with open("pinned.txt", "r+") as file:
+#         op = get_open_dialogues()
+#
+#         top = "\U0001F5E3 Открытые диалоги:\n" + "\n".join(op)
+#
+#
+#         bottom = file.read().split("==========")[1]
+#         new_full = top + "\n==========" + bottom
+#
+#     with open("pinned.txt", "w") as file:
+#         file.write(new_full)
+#
+#     try:
+#         bot.edit_message_text(new_full, config.group_id, config.pinned_msg, parse_mode='HTML')
+#     except Exception as e:
+#         error_txt = sys.exc_info()[1].args[0]
+#
+#         if "message is not modified: specified new message content and reply markup are exactly the same" in error_txt:
+#             pass
+#
+#         else:
+#             log_report("Pinned edit", e)
 
 
 # -------------------------------------------------
@@ -241,86 +241,86 @@ def open_dialogue(type_id, id, state="OPEN"):
 
 
 # --------------------------------------------------
-def close_dialogue(type_id, id, pay=False, silent=False, notify_admin_group=True):
-    """ Change client state in DB to CLOSED and update pinned message with new info
-        Optionally send client closing message """
-
-    # Return if client not found in DB
-    if not get_info("state", type_id, id):
-        return
-
-    # Point that dialogue is already closed and return to prevent multiple closing messages for client
-    if get_info("state", type_id, id) in ["CLOSED", "ONE MESSAGE"]:
-        bot.send_message(config.group_id, "Диалог уже закрыт")
-        return
-
-    update_clients([type_id, id], ["state", "CLOSED"], ["rate", "0"], ["review_time", "0"], ["received", "NO"])
-
-    if notify_admin_group:
-        bot.send_message(config.group_id, f"Диалог закрыт\n{id}")
-
-    #update_pinned_top()
-
-    # Do not send any message to client
-    if silent:
-        return
-
-    if type_id == "tg_id":
-
-        # Send client message with after payment instruction
-        if pay:
-            update_clients([type_id, id], ["verified", 1])
-            return
-
-        # Ask client to rate support
-        buttons = types.InlineKeyboardMarkup()
-        buttons.add(types.InlineKeyboardButton(text="\U0001F92C 1", callback_data="1"))
-        buttons.add(types.InlineKeyboardButton(text="\U00002639	2", callback_data="2"))
-        buttons.add(types.InlineKeyboardButton(text="\U0001F610 3", callback_data="3"))
-        buttons.add(types.InlineKeyboardButton(text="\U0001F642 4", callback_data="4"))
-        buttons.add(types.InlineKeyboardButton(text="\U0001F600 5", callback_data="5"))
-
-        bot.send_message(id, messages.close, reply_markup=buttons)
-
-    elif type_id == "vk_id":
-
-        if pay:
-            update_clients([type_id, id], ["verified", 1])
-            return
-
-        keyboard = VkKeyboard(inline=True)
-
-        keyboard.add_button("\U0001F92C 1")
-        keyboard.add_line()
-        keyboard.add_button("\U00002639	2")
-        keyboard.add_line()
-        keyboard.add_button("\U0001F610 3")
-        keyboard.add_line()
-        keyboard.add_button("\U0001F642 4")
-        keyboard.add_line()
-        keyboard.add_button("\U0001F600 5")
-
-        vk_send_message(id, messages.close, keyboard=keyboard.get_keyboard())
-
-    elif type_id == "fb_id":
-
-        if pay:
-            update_clients([type_id, id], ["verified", 1])
-            return
-
-        buttons = [Button(title='\U0001F92C Плохо', type='postback', payload='2'),
-                   Button(title='\U0001F610 Нормально', type='postback', payload='4'),
-                   Button(title='\U0001F600 Отлично', type='postback', payload='5')]
-
-        fb_bot.send_button_message(recipient_id=id, text=messages.close, buttons=buttons)
+# def close_dialogue(type_id, id, pay=False, silent=False, notify_admin_group=True):
+#     """ Change client state in DB to CLOSED and update pinned message with new info
+#         Optionally send client closing message """
+#
+#     # Return if client not found in DB
+#     if not get_info("state", type_id, id):
+#         return
+#
+#     # Point that dialogue is already closed and return to prevent multiple closing messages for client
+#     if get_info("state", type_id, id) in ["CLOSED", "ONE MESSAGE"]:
+#         bot.send_message(config.group_id, "Диалог уже закрыт")
+#         return
+#
+#     update_clients([type_id, id], ["state", "CLOSED"], ["rate", "0"], ["review_time", "0"], ["received", "NO"])
+#
+#     if notify_admin_group:
+#         bot.send_message(config.group_id, f"Диалог закрыт\n{id}")
+#
+#     #update_pinned_top()
+#
+#     # Do not send any message to client
+#     if silent:
+#         return
+#
+#     if type_id == "tg_id":
+#
+#         # Send client message with after payment instruction
+#         if pay:
+#             update_clients([type_id, id], ["verified", 1])
+#             return
+#
+#         # Ask client to rate support
+#         buttons = types.InlineKeyboardMarkup()
+#         buttons.add(types.InlineKeyboardButton(text="\U0001F92C 1", callback_data="1"))
+#         buttons.add(types.InlineKeyboardButton(text="\U00002639	2", callback_data="2"))
+#         buttons.add(types.InlineKeyboardButton(text="\U0001F610 3", callback_data="3"))
+#         buttons.add(types.InlineKeyboardButton(text="\U0001F642 4", callback_data="4"))
+#         buttons.add(types.InlineKeyboardButton(text="\U0001F600 5", callback_data="5"))
+#
+#         bot.send_message(id, messages.close, reply_markup=buttons)
+#
+#     elif type_id == "vk_id":
+#
+#         if pay:
+#             update_clients([type_id, id], ["verified", 1])
+#             return
+#
+#         keyboard = VkKeyboard(inline=True)
+#
+#         keyboard.add_button("\U0001F92C 1")
+#         keyboard.add_line()
+#         keyboard.add_button("\U00002639	2")
+#         keyboard.add_line()
+#         keyboard.add_button("\U0001F610 3")
+#         keyboard.add_line()
+#         keyboard.add_button("\U0001F642 4")
+#         keyboard.add_line()
+#         keyboard.add_button("\U0001F600 5")
+#
+#         vk_send_message(id, messages.close, keyboard=keyboard.get_keyboard())
+#
+#     elif type_id == "fb_id":
+#
+#         if pay:
+#             update_clients([type_id, id], ["verified", 1])
+#             return
+#
+#         buttons = [Button(title='\U0001F92C Плохо', type='postback', payload='2'),
+#                    Button(title='\U0001F610 Нормально', type='postback', payload='4'),
+#                    Button(title='\U0001F600 Отлично', type='postback', payload='5')]
+#
+#         fb_bot.send_button_message(recipient_id=id, text=messages.close, buttons=buttons)
 
 
 # --------------------------------------------------
-def vk_send_message(user_id, message, keyboard=None):
-    """ Send message to VK user """
-
-    random_id = random.randint(0, 2147483646)
-    vk.messages.send(user_id=int(user_id), random_id=random_id, message=message, keyboard=keyboard)
+# def vk_send_message(user_id, message, keyboard=None):
+#     """ Send message to VK user """
+#
+#     random_id = random.randint(0, 2147483646)
+#     vk.messages.send(user_id=int(user_id), random_id=random_id, message=message, keyboard=keyboard)
 
 
 # --------------------------------------------------
@@ -412,45 +412,45 @@ def telegram():
                 bot.send_message(to_id, text)
 
     # --------------------------------------------------
-    def tg_to_vk(message, to_id):
-        """ Send message with attachments to VK """
-
-        if message.text:
-            vk.messages.send(user_id=int(to_id), random_id=random.randint(0, 2147483646), message=message.text)
-        elif message.photo:
-            photo_tg_to_vk(to_id, save_file(message), message.caption)
-        elif message.document:
-            doc_tg_to_vk(to_id, save_file(message), message.caption)
-
-    # -------------------------------------------------
-    def tg_to_fb(message, to_id):
-        """ Send text message to FB """
-
-        if message.text:
-            fb_bot.send_text_message(to_id, message.text)
+    # def tg_to_vk(message, to_id):
+    #     """ Send message with attachments to VK """
+    #
+    #     if message.text:
+    #         vk.messages.send(user_id=int(to_id), random_id=random.randint(0, 2147483646), message=message.text)
+    #     elif message.photo:
+    #         photo_tg_to_vk(to_id, save_file(message), message.caption)
+    #     elif message.document:
+    #         doc_tg_to_vk(to_id, save_file(message), message.caption)
 
     # -------------------------------------------------
-    def photo_tg_to_vk(user_id, path, message):
-        """ Upload photo to VK servers and send message """
-
-        server = vk.photos.getMessagesUploadServer()
-        upload = requests.post(server['upload_url'], files={'photo': open(path, 'rb')}).json()
-        save = vk.photos.saveMessagesPhoto(photo=upload['photo'], server=upload['server'], hash=upload['hash'])[0]
-        att = f"photo{save['owner_id']}_{save['id']}"
-
-        vk.messages.send(user_id=int(user_id), random_id=random.randint(1, 2147483647), message=message,
-                         attachment=att)
+    # def tg_to_fb(message, to_id):
+    #     """ Send text message to FB """
+    #
+    #     if message.text:
+    #         fb_bot.send_text_message(to_id, message.text)
 
     # -------------------------------------------------
-    def doc_tg_to_vk(user_id, path, message):
-        """ Upload document to VK servers and send message """
+    # def photo_tg_to_vk(user_id, path, message):
+    #     """ Upload photo to VK servers and send message """
+    #
+    #     server = vk.photos.getMessagesUploadServer()
+    #     upload = requests.post(server['upload_url'], files={'photo': open(path, 'rb')}).json()
+    #     save = vk.photos.saveMessagesPhoto(photo=upload['photo'], server=upload['server'], hash=upload['hash'])[0]
+    #     att = f"photo{save['owner_id']}_{save['id']}"
+    #
+    #     vk.messages.send(user_id=int(user_id), random_id=random.randint(1, 2147483647), message=message,
+    #                      attachment=att)
 
-        server = vk.docs.getMessagesUploadServer(peer_id=user_id, type="doc")
-        upload = requests.post(server['upload_url'], files={'file': open(path, 'rb')}).json()
-        save = vk.docs.save(file=upload['file'])
-        att = f"doc{save['doc']['owner_id']}_{save['doc']['id']}"
-
-        vk.messages.send(user_id=user_id, random_id=random.randint(1, 2147483647), message=message, attachment=att)
+    # -------------------------------------------------
+    # def doc_tg_to_vk(user_id, path, message):
+    #     """ Upload document to VK servers and send message """
+    #
+    #     server = vk.docs.getMessagesUploadServer(peer_id=user_id, type="doc")
+    #     upload = requests.post(server['upload_url'], files={'file': open(path, 'rb')}).json()
+    #     save = vk.docs.save(file=upload['file'])
+    #     att = f"doc{save['doc']['owner_id']}_{save['doc']['id']}"
+    #
+    #     vk.messages.send(user_id=user_id, random_id=random.randint(1, 2147483647), message=message, attachment=att)
 
     # -------------------------------------------------
     def save_file(message, folder=config.files_path, check=False):
@@ -480,34 +480,34 @@ def telegram():
         return path
 
     # --------------------------------------------------
-    def spam(tariffs_list, text, sender, VK_only=False, TG_only=False):
-        """ Send message to every known messenger for every client with chosen tariffs """
-
-        with sql.connect(config.db_file) as con:
-            clients_list = []
-
-            # Get IDs of every client with chosen tariffs
-            for t in tariffs_list:
-                cur = con.cursor()
-                cur.execute("SELECT tg_id, vk_id, fb_id FROM clients WHERE tariff = ?", (t,))
-                clients_list += cur.fetchall()
-
-        for client in clients_list:
-            sent = False
-            if not VK_only and client[0] != "0":
-                url = f'https://api.telegram.org/bot{config.tg_token}/copyMessage'
-                requests.post(url, json={"chat_id": f"{client[0]}", "from_chat_id": f"{sender}",
-                                         "message_id": f"{temp['message_id']}"})
-                sent = True
-            if not TG_only and client[1] != "0":
-                vk.messages.send(user_id=int(client[1]), random_id=random.randint(0, 2147483646), message=text)
-                sent = True
-            #elif client[2] != "0":
-                #fb_bot.send_text_message(client[2], text)  # Temporarily off
-
-            # Delay to prevent api errors
-            if sent:
-                time.sleep(1)
+    # def spam(tariffs_list, text, sender, VK_only=False, TG_only=False):
+    #     """ Send message to every known messenger for every client with chosen tariffs """
+    #
+    #     with sql.connect(config.db_file) as con:
+    #         clients_list = []
+    #
+    #         # Get IDs of every client with chosen tariffs
+    #         for t in tariffs_list:
+    #             cur = con.cursor()
+    #             cur.execute("SELECT tg_id, vk_id, fb_id FROM clients WHERE tariff = ?", (t,))
+    #             clients_list += cur.fetchall()
+    #
+    #     for client in clients_list:
+    #         sent = False
+    #         if not VK_only and client[0] != "0":
+    #             url = f'https://api.telegram.org/bot{config.tg_token}/copyMessage'
+    #             requests.post(url, json={"chat_id": f"{client[0]}", "from_chat_id": f"{sender}",
+    #                                      "message_id": f"{temp['message_id']}"})
+    #             sent = True
+    #         if not TG_only and client[1] != "0":
+    #             vk.messages.send(user_id=int(client[1]), random_id=random.randint(0, 2147483646), message=text)
+    #             sent = True
+    #         #elif client[2] != "0":
+    #             #fb_bot.send_text_message(client[2], text)  # Temporarily off
+    #
+    #         # Delay to prevent api errors
+    #         if sent:
+    #             time.sleep(1)
 
     # --------------------------------------------------
     def check_mail_edit(message):
@@ -606,57 +606,57 @@ def telegram():
                          reply_markup=markup_buttons)
 
     # ----------------------------------------------
-    def autopay(message):
-        """ Detect text on image using OCR service
-            If the image contains numbers that correspond to the current tariffs, consider it as payment
-            Currently used only for yuan payments """
-
-        # Check if the same image has been sent before, and save it
-        filename = save_file(message, folder=config.pay_imgs_path, check=True)
-        if filename == "File already in folder":
-            return
-
-        # OCR service payload
-        payload = {'isOverlayRequired': False,
-                   'apikey': config.ocr_token,
-                   'language': "eng",
-                   'OCREngine': '2'
-                   }
-
-        with open(filename, 'rb') as f:
-            r = requests.post('https://api.ocr.space/parse/image',
-                              files={filename: f},
-                              data=payload,
-                              )
-        answer = json.loads(r.content.decode())
-
-        # Get array of all separate text lines
-        text_on_image = answer['ParsedResults'][0]['ParsedText'].split()
-
-        for line in text_on_image:
-
-            # Cut off all non-digit characters from both sides (for those cases when text is like "¥59.00")
-            while line and line[0] not in '0123456789':
-                line = line[1:]
-            while line and line[-1] not in '0123456789':
-                line = line[:-1]
-
-            # Check if text matches the "*.00" pattern, for example "239.00"
-            if re.match("[0-9]+[.,]00", line):
-
-                # Tariffs are in roubles, so convert yuan to roubles, simply multiplying by 10
-                line = str(int(line[:-3]) * 10)
-
-                # Detected number corresponds to the current tariffs, confirm payment
-                if line in tariffs_base:
-                    tariff, days, description = tariffs_base[line]
-                    write_payment(get_info('email', 'tg_id', message.chat.id), line)
-                    bot.send_message(config.group_id,
-                                     f"ID `{message.chat.id}` продлен тариф {tariff}, сумма {line}, дней {days}",
-                                     parse_mode='Markdown')
-                    time.sleep(1)
-                    close_dialogue('tg_id', message.chat.id, pay=True, notify_admin_group=False)
-                    return
+    # def autopay(message):
+    #     """ Detect text on image using OCR service
+    #         If the image contains numbers that correspond to the current tariffs, consider it as payment
+    #         Currently used only for yuan payments """
+    #
+    #     # Check if the same image has been sent before, and save it
+    #     filename = save_file(message, folder=config.pay_imgs_path, check=True)
+    #     if filename == "File already in folder":
+    #         return
+    #
+    #     # OCR service payload
+    #     payload = {'isOverlayRequired': False,
+    #                'apikey': config.ocr_token,
+    #                'language': "eng",
+    #                'OCREngine': '2'
+    #                }
+    #
+    #     with open(filename, 'rb') as f:
+    #         r = requests.post('https://api.ocr.space/parse/image',
+    #                           files={filename: f},
+    #                           data=payload,
+    #                           )
+    #     answer = json.loads(r.content.decode())
+    #
+    #     # Get array of all separate text lines
+    #     text_on_image = answer['ParsedResults'][0]['ParsedText'].split()
+    #
+    #     for line in text_on_image:
+    #
+    #         # Cut off all non-digit characters from both sides (for those cases when text is like "¥59.00")
+    #         while line and line[0] not in '0123456789':
+    #             line = line[1:]
+    #         while line and line[-1] not in '0123456789':
+    #             line = line[:-1]
+    #
+    #         # Check if text matches the "*.00" pattern, for example "239.00"
+    #         if re.match("[0-9]+[.,]00", line):
+    #
+    #             # Tariffs are in roubles, so convert yuan to roubles, simply multiplying by 10
+    #             line = str(int(line[:-3]) * 10)
+    #
+    #             # Detected number corresponds to the current tariffs, confirm payment
+    #             if line in tariffs_base:
+    #                 tariff, days, description = tariffs_base[line]
+    #                 write_payment(get_info('email', 'tg_id', message.chat.id), line)
+    #                 bot.send_message(config.group_id,
+    #                                  f"ID `{message.chat.id}` продлен тариф {tariff}, сумма {line}, дней {days}",
+    #                                  parse_mode='Markdown')
+    #                 time.sleep(1)
+    #                 close_dialogue('tg_id', message.chat.id, pay=True, notify_admin_group=False)
+    #                 return
 
     @bot.message_handler(commands=["start"])
     def start(message):
@@ -848,50 +848,50 @@ def telegram():
                              parse_mode='Markdown')
             update_clients(["tg_id", call.message.chat.id], ["rate", rating])
 
-    @bot.message_handler(func=check_mailing, content_types=['text', 'photo', 'video', 'voice', 'audio', 'sticker', 'document'])
-    def mailing(message):
-        """ Sends a message to clients with selected tariffs """
-
-        txt = message.text or message.caption
-
-        if txt == "/рассылка":
-            bot.send_message(message.chat.id, messages.mailing_tariffs)
-            return
-
-        client_text = message.reply_to_message.text
-
-        if client_text == messages.mailing_tariffs:
-            temp['tariffs'] = [i.lower() for i in txt.split()]
-            bot.send_message(message.chat.id, messages.mailing_message)
-
-        elif client_text == messages.mailing_message:
-            temp['message_id'] = message.message_id
-            temp['mail_text'] = txt
-            bot.send_message(message.chat.id, f"Следующие тарифы: {', '.join(temp['tariffs'])}\n"
-                                              f"Получат сообщение:\n{txt}\n\n"
-                                              f"Продолжить? Да/Нет ответом.\n"
-                                              f"Чтобы отправить ТОЛЬКО в телеграм или вконтакте, ответьте тг/вк")
-
-        elif client_text.startswith("Следующие тарифы:"):
-            if txt.lower() in ["да", "вк", "тг"]:
-
-                if not temp['tariffs'] or not temp['mail_text']:
-                    bot.send_message(message.chat.id, "Не выбраны тарифы/текст!")
-                    return
-                if txt.lower() == "вк":
-                    spam(temp['tariffs'], temp['mail_text'], message.chat.id, VK_only=True)
-                elif txt.lower() == 'тг':
-                    spam(temp['tariffs'], temp['mail_text'], message.chat.id, TG_only=True)
-                else:
-                    spam(temp['tariffs'], temp['mail_text'], message.chat.id)
-                bot.send_message(message.chat.id, "Рассылка отправлена")
-
-            elif txt.lower() == "нет":
-                bot.send_message(message.chat.id, "Рассылка отменена")
-                temp['tariffs'], temp['mail_text'] = [], ''
-
-            else:
-                bot.send_message(message.chat.id, "Не понял, повторите")
+    # @bot.message_handler(func=check_mailing, content_types=['text', 'photo', 'video', 'voice', 'audio', 'sticker', 'document'])
+    # def mailing(message):
+    #     """ Sends a message to clients with selected tariffs """
+    #
+    #     txt = message.text or message.caption
+    #
+    #     if txt == "/рассылка":
+    #         bot.send_message(message.chat.id, messages.mailing_tariffs)
+    #         return
+    #
+    #     client_text = message.reply_to_message.text
+    #
+    #     if client_text == messages.mailing_tariffs:
+    #         temp['tariffs'] = [i.lower() for i in txt.split()]
+    #         bot.send_message(message.chat.id, messages.mailing_message)
+    #
+    #     elif client_text == messages.mailing_message:
+    #         temp['message_id'] = message.message_id
+    #         temp['mail_text'] = txt
+    #         bot.send_message(message.chat.id, f"Следующие тарифы: {', '.join(temp['tariffs'])}\n"
+    #                                           f"Получат сообщение:\n{txt}\n\n"
+    #                                           f"Продолжить? Да/Нет ответом.\n"
+    #                                           f"Чтобы отправить ТОЛЬКО в телеграм или вконтакте, ответьте тг/вк")
+    #
+    #     elif client_text.startswith("Следующие тарифы:"):
+    #         if txt.lower() in ["да", "вк", "тг"]:
+    #
+    #             if not temp['tariffs'] or not temp['mail_text']:
+    #                 bot.send_message(message.chat.id, "Не выбраны тарифы/текст!")
+    #                 return
+    #             if txt.lower() == "вк":
+    #                 spam(temp['tariffs'], temp['mail_text'], message.chat.id, VK_only=True)
+    #             elif txt.lower() == 'тг':
+    #                 spam(temp['tariffs'], temp['mail_text'], message.chat.id, TG_only=True)
+    #             else:
+    #                 spam(temp['tariffs'], temp['mail_text'], message.chat.id)
+    #             bot.send_message(message.chat.id, "Рассылка отправлена")
+    #
+    #         elif txt.lower() == "нет":
+    #             bot.send_message(message.chat.id, "Рассылка отменена")
+    #             temp['tariffs'], temp['mail_text'] = [], ''
+    #
+    #         else:
+    #             bot.send_message(message.chat.id, "Не понял, повторите")
 
     @bot.message_handler(func=check_mail_edit)
     def mail_edit(message):
@@ -1021,73 +1021,73 @@ def telegram():
                 pass
 
             # Reply object message was forwarded from tg
-            elif client_text and client_text.endswith("Telegram") or client_text.endswith("Telegram\U00002705"):
-
-                tg_id = client_text.split()[-2]
-
-                # User id does not fit 'one or more numeral' regexp
-                if not re.fullmatch(r"[0-9]+", str(tg_id)):
-                    bot.send_message(config.group_id, "Не удалось отправить сообщение. "
-                                                      "Скорее всего это закрытый аккаунт без айди в подписи")
-                    return
-
-                #test code
-                print(message.text)
-
-                # Close dialogue
-                if message.text and message.text.lower() in ["пока", "/пока", "off", "конец", "/q"]:
-                    close_dialogue("tg_id", tg_id)
-
-                # Close payment dialogue
-                elif message.text and message.text.lower() in ["/оплата", "оп"]:
-                    close_dialogue("tg_id", tg_id, pay=True)
-
-                # Close dialogue silently
-                #elif message.text and message.text.lower() == "/закрыть":
-
-                elif (message.text != None) and (message.text.lower() == "/закрыть"):
-                    close_dialogue("tg_id", tg_id, silent=True)
-
-                else:
-
-                    # Check if message was forwarded by bot, not by other user
-                    print(message.reply_to_message.from_user.id)
-                    if message.reply_to_message.from_user.id == config.bot_id:
-                        tg_to_tg(tg_id, message, from_support=True)  # Finally, send answer to client :)
-                        open_dialogue("tg_id", tg_id)
-
-            # Reply object message was forwarded from VK
-            elif client_text and client_text.endswith("Vkontakte") or client_text.endswith("Vkontakte\U00002705"):
-                vk_id = client_text.split()[-2]
-
-                if message.text and message.text.lower() in ["пока", "off", "конец", "/q"]:
-                    close_dialogue("vk_id", vk_id)
-
-                elif message.text and message.text.lower() in ["/оплата", "оп"]:
-                    close_dialogue("vk_id", vk_id, pay=True)
-
-                elif message.text and message.text.lower() == "/закрыть":
-                    close_dialogue("vk_id", vk_id, silent=True)
-
-                else:
-                    tg_to_vk(message, vk_id)
-                    open_dialogue("vk_id", vk_id)
-
-            # Reply object message was forwarded from FB
-            elif client_text and client_text.endswith("Facebook"):
-                fb_id = client_text.split()[-2]
-
-                if message.text and message.text.lower() in ["пока", "/пока", "off", "конец", "/q"]:
-                    close_dialogue("fb_id", fb_id)
-
-                elif message.text and message.text.lower() in ["/оплата", "оп"]:
-                    close_dialogue("fb_id", fb_id, pay=True)
-
-                elif message.text and message.text.lower() == "/закрыть":
-                    close_dialogue("fb_id", fb_id, silent=True)
-
-                else:
-                    tg_to_fb(message, fb_id)
+            # elif client_text and client_text.endswith("Telegram") or client_text.endswith("Telegram\U00002705"):
+            #
+            #     tg_id = client_text.split()[-2]
+            #
+            #     # User id does not fit 'one or more numeral' regexp
+            #     if not re.fullmatch(r"[0-9]+", str(tg_id)):
+            #         bot.send_message(config.group_id, "Не удалось отправить сообщение. "
+            #                                           "Скорее всего это закрытый аккаунт без айди в подписи")
+            #         return
+            #
+            #     #test code
+            #     print(message.text)
+            #
+            #     # Close dialogue
+            #     if message.text and message.text.lower() in ["пока", "/пока", "off", "конец", "/q"]:
+            #         close_dialogue("tg_id", tg_id)
+            #
+            #     # Close payment dialogue
+            #     elif message.text and message.text.lower() in ["/оплата", "оп"]:
+            #         close_dialogue("tg_id", tg_id, pay=True)
+            #
+            #     # Close dialogue silently
+            #     #elif message.text and message.text.lower() == "/закрыть":
+            #
+            #     elif (message.text != None) and (message.text.lower() == "/закрыть"):
+            #         close_dialogue("tg_id", tg_id, silent=True)
+            #
+            #     else:
+            #
+            #         # Check if message was forwarded by bot, not by other user
+            #         print(message.reply_to_message.from_user.id)
+            #         if message.reply_to_message.from_user.id == config.bot_id:
+            #             tg_to_tg(tg_id, message, from_support=True)  # Finally, send answer to client :)
+            #             open_dialogue("tg_id", tg_id)
+            #
+            # # Reply object message was forwarded from VK
+            # elif client_text and client_text.endswith("Vkontakte") or client_text.endswith("Vkontakte\U00002705"):
+            #     vk_id = client_text.split()[-2]
+            #
+            #     if message.text and message.text.lower() in ["пока", "off", "конец", "/q"]:
+            #         close_dialogue("vk_id", vk_id)
+            #
+            #     elif message.text and message.text.lower() in ["/оплата", "оп"]:
+            #         close_dialogue("vk_id", vk_id, pay=True)
+            #
+            #     elif message.text and message.text.lower() == "/закрыть":
+            #         close_dialogue("vk_id", vk_id, silent=True)
+            #
+            #     else:
+            #         tg_to_vk(message, vk_id)
+            #         open_dialogue("vk_id", vk_id)
+            #
+            # # Reply object message was forwarded from FB
+            # elif client_text and client_text.endswith("Facebook"):
+            #     fb_id = client_text.split()[-2]
+            #
+            #     if message.text and message.text.lower() in ["пока", "/пока", "off", "конец", "/q"]:
+            #         close_dialogue("fb_id", fb_id)
+            #
+            #     elif message.text and message.text.lower() in ["/оплата", "оп"]:
+            #         close_dialogue("fb_id", fb_id, pay=True)
+            #
+            #     elif message.text and message.text.lower() == "/закрыть":
+            #         close_dialogue("fb_id", fb_id, silent=True)
+            #
+            #     else:
+            #         tg_to_fb(message, fb_id)
 
             #my code
             elif client_text and client_text.endswith("Web_client"):
@@ -1110,38 +1110,39 @@ def telegram():
 
         # Message is not reply to some message
         else:
-
-            # Message text is dialogue closing command
-            if message.text and message.text.lower().split()[0] in ["пока", "/пока", "off", "конец", "/q"]:
-
-                # If not replying to some message, closing message must be exactly 2 words
-                # and contain ID of user whose dialogue we want to close
-                if len(message.text.lower().split()) != 2:
-                    bot.send_message(message.chat.id, "Отправьте команду и айди через пробел, например:\n"
-                                                      "Пока 1234567")
-                    return
-
-                # We don't know which messenger this id belongs to, so just try to close this ID for every type
-                for id_type in ["tg_id", "vk_id", "fb_id"]:
-                    close_dialogue(id_type, message.text.lower().split()[1])
-
-            elif message.text and message.text.lower().split()[0] in ["/оплата", "оп"]:
-                if len(message.text.lower().split()) != 2:
-                    bot.send_message(message.chat.id, "Отправьте команду и айди через пробел, например:\n"
-                                                      "/оплата 1234567")
-                    return
-
-                for id_type in ["tg_id", "vk_id", "fb_id"]:
-                    close_dialogue(id_type, message.text.lower().split()[1], pay=True)
-
-            elif message.text and message.text.lower().split()[0] == "/закрыть":
-                if len(message.text.lower().split()) != 2:
-                    bot.send_message(message.chat.id, "Отправьте команду и айди через пробел, например:\n"
-                                                      "/закрыть 1234567")
-                    return
-
-                for id_type in ["tg_id", "vk_id", "fb_id"]:
-                    close_dialogue(id_type, message.text.lower().split()[1], silent=True)
+            print('some else')
+            #
+            # # Message text is dialogue closing command
+            # if message.text and message.text.lower().split()[0] in ["пока", "/пока", "off", "конец", "/q"]:
+            #
+            #     # If not replying to some message, closing message must be exactly 2 words
+            #     # and contain ID of user whose dialogue we want to close
+            #     if len(message.text.lower().split()) != 2:
+            #         bot.send_message(message.chat.id, "Отправьте команду и айди через пробел, например:\n"
+            #                                           "Пока 1234567")
+            #         return
+            #
+            #     # We don't know which messenger this id belongs to, so just try to close this ID for every type
+            #     for id_type in ["tg_id", "vk_id", "fb_id"]:
+            #         close_dialogue(id_type, message.text.lower().split()[1])
+            #
+            # elif message.text and message.text.lower().split()[0] in ["/оплата", "оп"]:
+            #     if len(message.text.lower().split()) != 2:
+            #         bot.send_message(message.chat.id, "Отправьте команду и айди через пробел, например:\n"
+            #                                           "/оплата 1234567")
+            #         return
+            #
+            #     for id_type in ["tg_id", "vk_id", "fb_id"]:
+            #         close_dialogue(id_type, message.text.lower().split()[1], pay=True)
+            #
+            # elif message.text and message.text.lower().split()[0] == "/закрыть":
+            #     if len(message.text.lower().split()) != 2:
+            #         bot.send_message(message.chat.id, "Отправьте команду и айди через пробел, например:\n"
+            #                                           "/закрыть 1234567")
+            #         return
+            #
+            #     for id_type in ["tg_id", "vk_id", "fb_id"]:
+            #         close_dialogue(id_type, message.text.lower().split()[1], silent=True)
 
     @bot.message_handler(func=lambda message: get_info("state", "tg_id", message.chat.id) in ["OPEN", "REMINDED", "PAY"],
                          content_types=['text', 'photo', 'video', 'voice', 'audio', 'sticker', 'document'])
@@ -1166,7 +1167,8 @@ def telegram():
         # Client sent a photo after he has chosen the payment option. Consider this photo as payment screenshot
         elif user_state == "PAY":
             if message.photo:
-                autopay(message)
+                #autopay(message)
+                print('some in pay state')
 
     @bot.message_handler(func=lambda message: get_info("state", "tg_id", message.chat.id) == "CLOSED",
                          content_types=['text', 'photo', 'video', 'voice', 'audio', 'sticker', 'document'])
@@ -2079,14 +2081,14 @@ def start_bot():
     res, clients_open, info = [], [], []
 
     # Telegram bot
-    bot = telebot.TeleBot(config.tg_token, skip_pending=True)
+    #bot = telebot.TeleBot(config.tg_token, skip_pending=True)
 
     # Vkontakte bot
     # vk_session = vk_api.VkApi(token=config.token_vk)
     # vk = vk_session.get_api()
 
     # Facebook bot
-    fb_bot = Bot(config.fb_access_token)
+    #fb_bot = Bot(config.fb_access_token)
 
     # Google sheets authorization
     # gc = gspread.service_account(filename=config.cred_final)
@@ -2133,11 +2135,11 @@ if __name__ == '__main__':
         bot = telebot.TeleBot(config.tg_token, skip_pending=True)
 
         # Vkontakte bot
-        vk_session = vk_api.VkApi(token=config.token_vk)
-        vk = vk_session.get_api()
+        # vk_session = vk_api.VkApi(token=config.token_vk)
+        # vk = vk_session.get_api()
 
         # Facebook bot
-        fb_bot = Bot(config.fb_access_token)
+        # fb_bot = Bot(config.fb_access_token)
 
         # Google sheets authorization
         # gc = gspread.service_account(filename=config.cred_final)
