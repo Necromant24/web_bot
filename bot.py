@@ -73,16 +73,6 @@ def start_bot():
 
 
 if __name__ == '__main__':
-
-        # Dict containing all tariffs info (for OCR-based payment handling)
-        tariffs_base = {}
-
-        # Temp data for mailing and DB editing commands
-        temp = {"tariffs": [], "mail_text": "", "wrong_email": "", "true_email": ""}
-
-        # Arrays for different functions
-        res, clients_open, info = [], [], []
-
         # Telegram bot
         bot = telebot.TeleBot(config.tg_token, skip_pending=True)
 
