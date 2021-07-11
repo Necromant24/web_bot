@@ -1,40 +1,14 @@
-import sqlite3 as sql
 import config
 from flask import Flask, request, send_from_directory, redirect
-import data_structs as ds
 
 app = Flask(__name__)
 url_prefix = ""
 
-def db_find_value(col_name, value):
-    """ Check if value exists in database and return corresponding row, 'col_name' must be name of DB column
-        DB columns in order: email, date, tariff, sub, tg_id, vk_id, fb_id, state, rate, review_time, received, verified """
 
-    with sql.connect(config.db_file) as con:
-        cur = con.cursor()
-        cur.execute("SELECT * FROM clients WHERE "+col_name+" = ?", (str(value).lower(),))
-        res = cur.fetchall()
+admin_password = '123'
 
-        if res:
-            return res[0]
-
-        return 0
-
-# --------------------------------------------------
-def client_info_msg(col_name, value):
-    """ Make a message with client tariff info """
-
-    info = db_find_value(col_name, value)
-    if not info:
-        return "No info about client"
-
-    message = f"\U00002139\nemail: {info[0]}\n" \
-              f"date: {info[1]}\n" \
-              f"tariff: {info[2]}\n" \
-              f"sub: {info[3]}\n"
-
-    return message
-
+# let url_prefix = "";
+# let ws_prefix = "botws/";
 
 @app.route('/')
 def hello2():
@@ -61,15 +35,7 @@ def send_img_to_tg(name, email):
 @app.route(url_prefix+"/email", methods=['POST'])
 def email():
     client_email = request.json['email']
-
-    if client_info_msg('email', client_email) == 'No info about client':
-        with sql.connect(config.db_file) as con:
-            cur = con.cursor()
-            cur.execute("INSERT INTO clients (email) VALUES (?)", (client_email,))
-
-            return {"status": "created new row"}
-
-    return {"status": "already exists"}
+    return {"status": "some bespoleznyi method"}
 
 
 @app.route(url_prefix+'/photo', methods=['POST'])
@@ -101,54 +67,37 @@ def support_message():
     return {'status': 'ok'}
 
 
-@app.route(url_prefix+'/chat', methods=['POST', 'GET'])
-def chat_message():
-    meth = request.method
-
-    command = request.json['message']
-    lang = 'ru'
-
-    try:
-        lang = request.json['language']
-    except Exception:
-        print('not defined key - language')
-
-    answer = {}
-
-    commands = []
-    if lang == 'en':
-        commands = ds.en_command_answers
-    else:
-        commands = ds.command_answers
-
-
-
-    if (command in commands.keys()):
-        answer = commands[command]
-    else:
-        answer = {"answer": "unknown command", "commands": []}
-
-    return answer
-
-
 @app.route(url_prefix+'/static/<path:path>')
 def serve_static(path):
-    return send_from_directory('chat_app', path)
+    print(path)
+    return send_from_directory('static', path)
 
 
-@app.route(url_prefix+'/commands')
-def all_commands():
-    answer = {'data': list(ds.viewed_cmds)}
-    return answer
+
+# upload data file in data_files/commands.json
+@app.route(url_prefix+'/upload_commands', methods = ['POST'])
+def upload_commands():
+    password = request.json['password']
+
+    if password != admin_password:
+        return {'status': 'incorrect password'}
+
+    all_data = request.json['data']
+    with open('data_files/commands.json', "w") as f:
+        f.write(all_data)
+
+    return {'status': 'ok'}
+
+
 
 def serve(app, host, port):
     app.run(host=host, port=port)
 
 
-def serve_default(host = '127.0.0.1', port = 5000):
-    app.run(host= host, port= port)
+def serve_default(host='0.0.0.0', port=5000):
+    app.run(host=host, port=port)
 
 
 if __name__ == '__main__':
     print('starting server')
-    serve(app, '127.0.0.1', 5000)
+    serve(app, '127.0.0.1', 6001)
