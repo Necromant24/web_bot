@@ -1,5 +1,7 @@
 import config
 from flask import Flask, request, send_from_directory, redirect
+import json
+
 
 app = Flask(__name__)
 url_prefix = ""
@@ -84,7 +86,7 @@ def upload_commands():
 
     all_data = request.json['data']
     with open('data_files/commands.json', "w") as f:
-        f.write(all_data)
+        f.write(json.dumps(all_data))
 
     return {'status': 'ok'}
 

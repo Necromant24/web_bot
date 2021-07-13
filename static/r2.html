@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title> chat app redactor </title>
+
+    <link rel="stylesheet" href="css/chat_redactor.css">
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1,  minimal-ui">
+</head>
+<body>
+<div id="app">
+    <v-app>
+        <v-main>
+            <v-container>
+
+                <v-row>
+                    <v-btn
+                            color="secondary"
+                            elevation="2"
+                            rounded
+                            @click="uploadDataFile"
+                    >
+                        upload new configuration
+                    </v-btn>
+                </v-row>
+
+                <v-row justify="center">
+
+                    <v-expansion-panels popout>
+                        <v-expansion-panel
+                                v-for="(command,i) in commands"
+                                :key="i"
+                        >
+                            <v-expansion-panel-header>
+                                <div>
+                                    <img class="icon" :src="'icons/' + command.icon"/>
+                                </div>
+                                <div>
+                                    {{ command.text }}
+                                </div>
+
+
+                            </v-expansion-panel-header>
+                            <v-expansion-panel-content>
+                                <v-row v-for="(answer,i) in command.answer">
+                                    <div style="display: flex;">
+                                        <div class="flexbox">
+                                            <v-col>FROM:</v-col>
+                                            <v-col>
+                                                <v-select
+                                                        v-model="answer.from"
+
+                                                        :items="from_list"
+                                                        item-text="answer.from"
+                                                        label="Select"
+                                                        persistent-hint
+                                                        return-object
+                                                        single-line
+                                                ></v-select>
+                                            </v-col>
+
+                                        </div>
+                                        <div class="flexbox">
+
+                                            <v-col>MESSAGE:</v-col>
+                                            <v-col>
+                                                <v-text-field
+                                                        label="Regular"
+                                                        v-model="answer.message"
+                                                ></v-text-field>
+                                            </v-col>
+                                        </div>
+                                        <div>
+                                            <v-col>CMD:</v-col>
+                                            <v-col>
+                                                <v-text-field
+                                                        label="Regular"
+                                                        v-model="answer.cmd"
+                                                ></v-text-field>
+                                            </v-col>
+                                        </div>
+                                    </div>
+                                </v-row>
+
+                            </v-expansion-panel-content>
+                        </v-expansion-panel>
+                    </v-expansion-panels>
+
+                </v-row>
+
+            </v-container>
+        </v-main>
+    </v-app>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+<script>
+
+    async function httpPost(url, data) {
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST', // или 'PUT'
+                body: JSON.stringify(data), // данные могут быть 'строкой' или {объектом}!
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const json = await response.json();
+            console.log('Успех:', JSON.stringify(json));
+            return json;
+        } catch (error) {
+            console.error('Ошибка:', error);
+        }
+    }
+
+
+    let app = new Vue({
+        el: '#app',
+        vuetify: new Vuetify(),
+        data: {
+            ws_url: '',
+            commands: ['sdv', 'sdv', 'sdv'],
+            from_list: ['bot', 'bot_link', 'bot_cmd']
+        },
+
+        created: () => {
+
+            fetch('/commands')
+                .then(response => {
+                    return response.json();
+                })
+                .then(data => {
+                    app.commands = data.commands;
+                    app.ws_url = data.ws_url;
+                    console.log(app.commands);
+                });
+
+        },
+
+        computed: {},
+
+        methods: {
+
+            uploadDataFile() {
+
+                let preparedData = {
+                    ws_url: this.ws_url,
+                    commands: this.commands
+                }
+
+                let some = httpPost('/upload_commands', {data: preparedData, password: '123'});
+                console.log('some->');
+                console.log(some);
+
+            }
+
+        }
+
+    })
+</script>
+</body>
+</html>
