@@ -4,7 +4,7 @@ import json
 
 
 app = Flask(__name__)
-url_prefix = ""
+url_prefix = "/botweb"
 
 
 admin_password = '123'
@@ -102,4 +102,4 @@ def serve_default(host='0.0.0.0', port=5000):
 
 if __name__ == '__main__':
     print('starting server')
-    serve(app, '127.0.0.1', 6001)
+    serve(app, '0.0.0.0', 5000)
