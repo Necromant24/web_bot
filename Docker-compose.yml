@@ -1,0 +1,28 @@
+version: '2'
+
+services:
+
+  botweb:
+
+    image: botweb
+    container_name: production_botweb
+
+    ports:
+    - 5000:5000
+    - 5500:5500
+
+  nginx:
+
+    image: nginx_proxy
+
+    container_name: production_nginx
+
+#    volumes:
+#      - /docker_nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+
+    ports:
+      - 4400:4400
+
+
+    links:
+      - botweb
