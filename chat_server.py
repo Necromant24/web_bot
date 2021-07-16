@@ -4,7 +4,7 @@ import json
 
 
 app = Flask(__name__)
-url_prefix = "/botweb"
+url_prefix = ""
 
 
 admin_password = '123'

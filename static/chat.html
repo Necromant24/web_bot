@@ -348,7 +348,7 @@
 
     let bottom_msg;
 
-    let url_prefix = "";
+    let url_prefix = "/botweb";
     let ws_prefix = "botws/";
 
     function msgEnter(e) {
@@ -472,9 +472,8 @@
 
     async function getAllCommands() {
 
-        fetch('/commands')
+        fetch(url_prefix + '/commands')
             .then(response => {
-
                 return response.json();
             })
             .then(data => {
@@ -496,15 +495,6 @@
                 app.cmds = cmds;
                 app.cmd_buttons = cmd_buttons;
 
-                console.log(cmd_buttons);
-                console.log('cmd_buttons');
-                console.log(cmds);
-                console.log('cmds');
-
-                console.log(app.cmd_buttons);
-                console.log('this.cmd_buttons');
-                console.log(app.cmds);
-                console.log('this.cmds');
             });
 
     }
