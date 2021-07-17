@@ -5,6 +5,15 @@ import telebot
 bot = telebot.TeleBot(config.tg_token, skip_pending=True)
 
 
+def log(msg):
+    text = ""
+    with open("logs.txt", "r") as f:
+        text = f.read()
+
+    with open("logs.txt", "w") as f:
+        f.write(text + "\n" + msg)
+
+
 def send_msg_to_tg(message_data):
     bot.send_message(config.group_id, message_data)
 

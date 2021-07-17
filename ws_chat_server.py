@@ -30,7 +30,7 @@ async def initWsConn(ws, path):
 
 
 def start_ws_server():
-
+    print('starting ws server')
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 

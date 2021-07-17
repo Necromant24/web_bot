@@ -398,7 +398,7 @@
 
     function initWS() {
 
-        let socket = new WebSocket(ws_path);
+        let socket = new WebSocket("ws://localhost:5500/");
 
         socket.onopen = function (e) {
             console.log("[open] Соединение установлено");
@@ -499,7 +499,7 @@
 
     }
 
-    let ws_path = '127.0.0.1:5500';
+    let ws_path = 'ws://localhost:5500';
 
     var app = new Vue({
         el: '#v-app',

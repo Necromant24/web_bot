@@ -13,6 +13,11 @@ def telegram():
                          content_types=['text', 'audio', 'document', 'photo', 'sticker', 'voice', 'video'])
     def support_group(message):
         """ Handle all messages in support group """
+        import helpers as h
+
+        h.log("some")
+
+
 
         # Bot info message
         if message.text and message.text.lower() == "/info":
@@ -46,7 +51,7 @@ def telegram():
     # --------------------------------------------------
     while True:
         try:
-            bot.infinity_polling(timeout=120)
+            bot.infinity_polling(timeout=220)
         except Exception as e:
             print("TG init error, restarting")
             time.sleep(3)
@@ -76,13 +81,16 @@ def start_bot():
 def run_bot():
     import ws_chat_server as ws_server
 
-    t1 = threading.Thread(target=tg_init)
-
+    print('start bot \\ws run')
     t5 = threading.Thread(target=ws_server.start_ws_server)
     t5.start()
 
-    t1.start()
-    t1.join()
+    tg_init()
+
+    # t1 = threading.Thread(target=tg_init)
+    #
+    # t1.start()
+    # t1.join()
 
 if __name__ == '__main__':
     run_bot()
